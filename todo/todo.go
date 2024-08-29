@@ -5,12 +5,17 @@ import (
 	"io"
 )
 
+type baseList interface {
+	outputTodos(writer io.Writer)
+	addTodo(newTodo string)
+}
+
 type TodoList struct {
-	list []string
+	List []string
 }
 
 func (tl *TodoList) outputTodos(writer io.Writer) {
-	for i, todo := range tl.list {
+	for i, todo := range tl.List {
 		fmt.Fprintln(writer, todo)
 		if i >= 9 {
 			break
@@ -19,5 +24,5 @@ func (tl *TodoList) outputTodos(writer io.Writer) {
 }
 
 func (tl *TodoList) addTodo(newTodo string) {
-	tl.list = append(tl.list, newTodo)
+	tl.List = append(tl.List, newTodo)
 }

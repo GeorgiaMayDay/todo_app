@@ -10,13 +10,13 @@ import (
 func assertStrings(t *testing.T, got, want string) {
 	t.Helper()
 	if !cmp.Equal(got, want) {
-		t.Errorf("got todo list print %s but wanted %s", got, want)
+		t.Errorf("got printed %s but wanted %s", got, want)
 	}
 }
 
 func TestTodoOutput(t *testing.T) {
 	t.Run("10 todo's are printed", func(t *testing.T) {
-		todo_list := TodoList{[]string{"Iron", "Eat",
+		todo_list := &TodoList{[]string{"Iron", "Eat",
 			"Hunker", "Mine", "Shear", "Cut", "Griddle", "Cook", "Host", "Grate"}}
 		output := &bytes.Buffer{}
 
@@ -29,7 +29,7 @@ func TestTodoOutput(t *testing.T) {
 	})
 
 	t.Run("if less then 10 todo's ju", func(t *testing.T) {
-		todo_list := TodoList{[]string{"Iron", "Eat",
+		todo_list := &TodoList{[]string{"Iron", "Eat",
 			"Hunker", "Mine", "Shear", "Cut", "Griddle", "Cook", "Host", "Grate", "Scale", "Brush"}}
 		output := &bytes.Buffer{}
 
@@ -41,7 +41,7 @@ func TestTodoOutput(t *testing.T) {
 	})
 
 	t.Run("if less then 10 todo's ju", func(t *testing.T) {
-		todo_list := TodoList{[]string{"Iron", "Eat",
+		todo_list := &TodoList{[]string{"Iron", "Eat",
 			"Hunker", "Mine", "Shear", "Cut"}}
 
 		output := &bytes.Buffer{}
