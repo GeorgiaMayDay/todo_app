@@ -46,4 +46,15 @@ func TestCli(t *testing.T) {
 			assertStrings(t, output.String(), want)
 		}
 	})
+
+	// t.Run("That CLI can update todo list", func(t *testing.T) {
+	// 	todoSpy := &SpyList{}
+	// 	output := &bytes.Buffer{}
+
+	// 	in := input
+
+	// 	ReadAndOutput(in, output, todoSpy)
+
+	// 	assertStrings(t, output.String(), want)
+	// })
 }

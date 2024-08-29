@@ -61,7 +61,7 @@ func TestAddTodo(t *testing.T) {
 
 		todo_list.addTodo("Cook")
 
-		got := todo_list.list
+		got := todo_list.List
 		want := []string{"Iron", "Eat",
 			"Hunker", "Mine", "Shear", "Cut", "Cook"}
 
