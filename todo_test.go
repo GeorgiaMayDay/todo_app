@@ -21,4 +21,32 @@ func TestTodoCLI(t *testing.T) {
 		}
 	})
 
+	t.Run("if less then 10 todo's ju", func(t *testing.T) {
+		todo_list := TodoList{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut", "Griddle", "Cook", "Host", "Grate", "Scale", "Brush"}
+		output := &bytes.Buffer{}
+
+		todo_list.outputTodos(output)
+
+		want := "Iron\nEat\nHunker\nMine\nShear\nCut\nGriddle\nCook\nHost\nGrate\n"
+
+		if cmp.Compare(output.String(), want) != 0 {
+			t.Errorf("got todo list print %s but wanted %s", output.String(), want)
+		}
+	})
+
+	t.Run("if less then 10 todo's ju", func(t *testing.T) {
+		todo_list := TodoList{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut"}
+		output := &bytes.Buffer{}
+
+		todo_list.outputTodos(output)
+
+		want := "Iron\nEat\nHunker\nMine\nShear\nCut\n"
+
+		if cmp.Compare(output.String(), want) != 0 {
+			t.Errorf("got todo list print %s but wanted %s", output.String(), want)
+		}
+	})
+
 }
