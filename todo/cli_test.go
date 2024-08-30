@@ -17,6 +17,12 @@ func assertInt(t *testing.T, got, want int) {
 	}
 }
 
+func assertList(t *testing.T, got, want []string) {
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("got todo list print %s but wanted %s", got, want)
+	}
+}
+
 type SpyList struct {
 	List []string
 }
@@ -31,6 +37,10 @@ func (sl *SpyList) addTodo(newTodo string) {
 
 func (sl *SpyList) deleteTodo(delTodo string) {
 	sl.List = []string{}
+}
+
+func (sl *SpyList) List_as_json() ([]byte, error) {
+	return []byte{}, fmt.Errorf("Filler")
 }
 
 var CliInputTable = map[io.Reader]string{
@@ -62,7 +72,7 @@ func TestCli(t *testing.T) {
 
 		want := []string{"Called"}
 
-		assertTodo(t, todoSpy.List, want)
+		assertList(t, todoSpy.List, want)
 	})
 
 	t.Run("That CLI can delete elements from todo list", func(t *testing.T) {
@@ -75,6 +85,6 @@ func TestCli(t *testing.T) {
 
 		want := []string{}
 
-		assertTodo(t, todoSpy.List, want)
+		assertList(t, todoSpy.List, want)
 	})
 }
