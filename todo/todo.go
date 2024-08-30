@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 )
 
@@ -70,4 +71,24 @@ func (tl *TodoList) List_as_json() ([]byte, error) {
 
 func (tl *TodoList) List_from_json(json_list []byte) {
 	json.Unmarshal(json_list, &tl.List)
+}
+
+func Create_todo_list_with_json_file(file_name string) (TodoList, error) {
+
+	current_Todo_list := TodoList{List: []Todo{}}
+
+	file, err := os.Open(file_name)
+	if err != nil {
+		return current_Todo_list, err
+	}
+
+	json_for_todo_list, err := GetAll(*file)
+
+	if err != nil {
+		return current_Todo_list, fmt.Errorf("something went wrong reading the file")
+	}
+
+	current_Todo_list.List_from_json(json_for_todo_list)
+
+	return current_Todo_list, nil
 }
