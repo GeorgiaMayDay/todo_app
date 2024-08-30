@@ -8,8 +8,6 @@ import (
 	"todo_app/todo"
 )
 
-// ask about the point and interface interaction
-
 func GoDo(db *todo.TodoList, finish chan<- bool) {
 	keepgoing := true
 	for keepgoing {
@@ -38,6 +36,5 @@ func main() {
 		fmt.Println("Adios!")
 	case <-finishChannel:
 		fmt.Println("Adios!")
-
 	}
 }

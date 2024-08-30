@@ -30,7 +30,7 @@ func (sl *SpyList) addTodo(newTodo string) {
 
 var CliInputTable = map[io.Reader]string{
 	strings.NewReader("1"):         "Called",
-	strings.NewReader("2\nCalled"): "\"Called\" added",
+	strings.NewReader("2\nCalled"): "\"Called\" added\n",
 }
 
 func TestCli(t *testing.T) {
