@@ -14,80 +14,57 @@ func assertStrings(t *testing.T, got, want string) {
 	}
 }
 
-func assertTodos(want, got map[int]string, t *testing.T) {
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Errorf("got todo list print %v but wanted %v", got, want)
-	}
-}
-
 func TestTodoOutput(t *testing.T) {
 	t.Run("10 todo's are printed", func(t *testing.T) {
-		todo_list := &TodoList{map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut", 7: "Griddle", 8: "Cook", 9: "Host", 10: "Grate"}}
+		todo_list := &TodoList{[]string{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut", "Griddle", "Cook", "Host", "Grate"}}
 		output := &bytes.Buffer{}
 
 		todo_list.outputTodos(output)
 
-		want := "Iron\nEat\nHunker\nMine\nShear\nCut\nGriddle\nCook\nHost\nGrate\n"
+		want := "1. Iron\n2. Eat\n3. Hunker\n4. Mine\n5. Shear\n6. Cut\n7. Griddle\n8. Cook\n9. Host\n10. Grate\n"
 
 		assertStrings(t, output.String(), want)
 
 	})
 
-	t.Run("if their are more then 10 todos, print only 10", func(t *testing.T) {
-		todo_list := &TodoList{map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut", 7: "Griddle", 8: "Cook", 9: "Host", 10: "Grate", 11: "Scale", 12: "Brush"}}
+	t.Run("if more then 10 todo's just print 10", func(t *testing.T) {
+		todo_list := &TodoList{[]string{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut", "Griddle", "Cook", "Host", "Grate", "Scale", "Brush"}}
 		output := &bytes.Buffer{}
 
 		todo_list.outputTodos(output)
 
-		want := "Iron\nEat\nHunker\nMine\nShear\nCut\nGriddle\nCook\nHost\nGrate\n"
-
+		want := "1. Iron\n2. Eat\n3. Hunker\n4. Mine\n5. Shear\n6. Cut\n7. Griddle\n8. Cook\n9. Host\n10. Grate\n"
 		assertStrings(t, output.String(), want)
 	})
 
-	t.Run("if less then 10 todo's just print 10", func(t *testing.T) {
-		todo_list := &TodoList{map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut"}}
+	t.Run("if less then 10 todo's just print all Todos", func(t *testing.T) {
+		todo_list := &TodoList{[]string{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut"}}
 
 		output := &bytes.Buffer{}
 
 		todo_list.outputTodos(output)
 
-		want := "Iron\nEat\nHunker\nMine\nShear\nCut\n"
+		want := "1. Iron\n2. Eat\n3. Hunker\n4. Mine\n5. Shear\n6. Cut\n"
 		assertStrings(t, output.String(), want)
 	})
 
 }
 
 func TestAddTodo(t *testing.T) {
-	t.Run("if less then 10 todo's ju", func(t *testing.T) {
-		todo_list := TodoList{map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut"}}
+	todo_list := TodoList{[]string{"Iron", "Eat",
+		"Hunker", "Mine", "Shear", "Cut"}}
 
-		todo_list.addTodo("Cook")
+	todo_list.addTodo("Cook")
 
-		got := todo_list.List
-		want := map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut", 7: "Cook"}
+	got := todo_list.List
+	want := []string{"Iron", "Eat",
+		"Hunker", "Mine", "Shear", "Cut", "Cook"}
 
-		assertTodos(want, got, t)
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("got todo list print %s but wanted %s", got, want)
+	}
 
-	})
-}
-
-func TestDeleteTodo(t *testing.T) {
-	t.Run("delete a todo", func(t *testing.T) {
-		todo_list := TodoList{map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut"}}
-
-		todo_list.addTodo("Cook")
-
-		got := todo_list.List
-		want := map[int]string{1: "Iron", 2: "Eat",
-			3: "Hunker", 4: "Mine", 5: "Shear", 6: "Cut"}
-
-		assertTodos(want, got, t)
-
-	})
 }

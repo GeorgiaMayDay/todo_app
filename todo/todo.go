@@ -3,6 +3,7 @@ package todo
 import (
 	"fmt"
 	"io"
+	"strconv"
 )
 
 type baseList interface {
@@ -11,18 +12,31 @@ type baseList interface {
 }
 
 type TodoList struct {
-	List map[int]string
+	List []string
 }
 
 func (tl *TodoList) outputTodos(writer io.Writer) {
-	for i := 1; i < 11; i++ {
-		if tl.List[i] == "" {
-			break
-		}
-		fmt.Fprintln(writer, tl.List[i])
+	count := 10
+	if len(tl.List) < count {
+		count = len(tl.List)
+	}
+	for i := 0; i < count; i++ {
+		todoformat := strconv.Itoa(i+1) + ". " + tl.List[i]
+		fmt.Fprintln(writer, todoformat)
 	}
 }
 
 func (tl *TodoList) addTodo(newTodo string) {
-	tl.List[len(tl.List)+1] = newTodo
+	tl.List = append(tl.List, newTodo)
 }
+
+// func (tl *TodoList) deleteTodo(delTodo string) {
+// 	num, err := strconv.Atoi(delTodo)
+// 	if err != nil {
+// 		for i, todo := range tl.List {
+// 			if todo == delTodo {
+// 				tl.List[i]
+// 			}
+// 		}
+// 	}
+// }
