@@ -13,6 +13,11 @@ func assertStrings(t *testing.T, got, want string) {
 		t.Errorf("got printed %s but wanted %s", got, want)
 	}
 }
+func assertTodo(t *testing.T, got, want []string) {
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("got todo list print %s but wanted %s", got, want)
+	}
+}
 
 func TestTodoOutput(t *testing.T) {
 	t.Run("10 todo's are printed", func(t *testing.T) {
@@ -63,8 +68,18 @@ func TestAddTodo(t *testing.T) {
 	want := []string{"Iron", "Eat",
 		"Hunker", "Mine", "Shear", "Cut", "Cook"}
 
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Errorf("got todo list print %s but wanted %s", got, want)
-	}
+	assertTodo(t, got, want)
+}
 
+func TestDeleteTodo(t *testing.T) {
+	todo_list := TodoList{[]string{"Iron", "Eat",
+		"Hunker", "Mine", "Shear", "Cut"}}
+
+	todo_list.deleteTodo("Mine")
+
+	got := todo_list.List
+	want := []string{"Iron", "Eat",
+		"Hunker", "Shear", "Cut"}
+
+	assertTodo(t, got, want)
 }
