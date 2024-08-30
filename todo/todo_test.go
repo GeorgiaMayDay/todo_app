@@ -109,13 +109,25 @@ func TestDeleteTodo(t *testing.T) {
 }
 
 func TestTodoJson(t *testing.T) {
-	todo_list := TodoList{generateTodoList()}
-	var output []Todo
+	t.Run("Get json from TodoList", func(t *testing.T) {
+		todo_list := TodoList{generateTodoList()}
+		var output []Todo
 
-	output_json, _ := todo_list.List_as_json()
+		output_json, _ := todo_list.List_as_json()
 
-	json.Unmarshal(output_json, &output)
+		json.Unmarshal(output_json, &output)
 
-	want := "[{\"Name\":\"Iron\",\"Status\":\"Todo\"},{\"Name\":\"Eat\",\"Status\":\"Complete\"},{\"Name\":\"Hunker\",\"Status\":\"Complete\"},{\"Name\":\"Mine\",\"Status\":\"Todo\"},{\"Name\":\"Shear\",\"Status\":\"Todo\"},{\"Name\":\"Cut\",\"Status\":\"Todo\"}]"
-	require.JSONEq(t, want, string(output_json))
+		want := "[{\"Name\":\"Iron\",\"Status\":\"Todo\"},{\"Name\":\"Eat\",\"Status\":\"Complete\"},{\"Name\":\"Hunker\",\"Status\":\"Complete\"},{\"Name\":\"Mine\",\"Status\":\"Todo\"},{\"Name\":\"Shear\",\"Status\":\"Todo\"},{\"Name\":\"Cut\",\"Status\":\"Todo\"}]"
+		require.JSONEq(t, want, string(output_json))
+	})
+
+	t.Run("Get TodoList from json", func(t *testing.T) {
+		todo_list := TodoList{}
+
+		json_of_list, _ := json.Marshal(generateTodoList())
+
+		todo_list.List_from_json(json_of_list)
+
+		assertTodo(t, todo_list.List, generateTodoList())
+	})
 }

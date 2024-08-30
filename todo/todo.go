@@ -67,3 +67,7 @@ func (tl *TodoList) deleteTodo(delTodo string) {
 func (tl *TodoList) List_as_json() ([]byte, error) {
 	return json.Marshal(tl.List)
 }
+
+func (tl *TodoList) List_from_json(json_list []byte) {
+	json.Unmarshal(json_list, &tl.List)
+}
