@@ -20,12 +20,16 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList) bool {
 	switch option {
 	case "1":
 		list.outputTodos(out)
-		return true
 	case "2":
 		todo_name := readLine(reader)
+		list.addTodo(todo_name)
 		out_msg := "\"" + todo_name + "\" added"
 		fmt.Fprintln(out, out_msg)
-		return true
+	case "3":
+		todo_name := readLine(reader)
+		list.deleteTodo(todo_name)
+		out_msg := "\"" + todo_name + "\" deleted"
+		fmt.Fprintln(out, out_msg)
 	case "Quit":
 		return false
 	case "Q":
@@ -34,6 +38,6 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList) bool {
 		return false
 	default:
 		fmt.Fprintln(out, invalid_opt_msg)
-		return true
 	}
+	return true
 }

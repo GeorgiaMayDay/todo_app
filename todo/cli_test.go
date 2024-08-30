@@ -18,6 +18,7 @@ func assertInt(t *testing.T, got, want int) {
 }
 
 type SpyList struct {
+	List []string
 }
 
 func (sl *SpyList) outputTodos(writer io.Writer) {
@@ -25,7 +26,11 @@ func (sl *SpyList) outputTodos(writer io.Writer) {
 }
 
 func (sl *SpyList) addTodo(newTodo string) {
+	sl.List = append(sl.List, newTodo)
+}
 
+func (sl *SpyList) deleteTodo(delTodo string) {
+	sl.List = []string{}
 }
 
 var CliInputTable = map[io.Reader]string{
@@ -47,14 +52,29 @@ func TestCli(t *testing.T) {
 		}
 	})
 
-	// t.Run("That CLI can update todo list", func(t *testing.T) {
-	// 	todoSpy := &SpyList{}
-	// 	output := &bytes.Buffer{}
+	t.Run("That CLI can add todo list", func(t *testing.T) {
+		todoSpy := &SpyList{}
+		output := &bytes.Buffer{}
 
-	// 	in := input
+		in := strings.NewReader("2\nCalled")
 
-	// 	ReadAndOutput(in, output, todoSpy)
+		ReadAndOutput(in, output, todoSpy)
 
-	// 	assertStrings(t, output.String(), want)
-	// })
+		want := []string{"Called"}
+
+		assertTodo(t, todoSpy.List, want)
+	})
+
+	t.Run("That CLI can delete elements from todo list", func(t *testing.T) {
+		todoSpy := &SpyList{List: []string{"Call"}}
+		output := &bytes.Buffer{}
+
+		in := strings.NewReader("3\nCall")
+
+		ReadAndOutput(in, output, todoSpy)
+
+		want := []string{}
+
+		assertTodo(t, todoSpy.List, want)
+	})
 }

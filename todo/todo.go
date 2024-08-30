@@ -9,6 +9,7 @@ import (
 type baseList interface {
 	outputTodos(writer io.Writer)
 	addTodo(newTodo string)
+	deleteTodo(delTodo string)
 }
 
 type TodoList struct {
