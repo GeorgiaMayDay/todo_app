@@ -65,5 +65,5 @@ func (tl *TodoList) deleteTodo(delTodo string) {
 }
 
 func (tl *TodoList) List_as_json() ([]byte, error) {
-	return json.Marshal(`[{Name: Cheese, Status: Apple}]`)
+	return json.Marshal(tl.List)
 }

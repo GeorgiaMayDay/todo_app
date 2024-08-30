@@ -2,9 +2,11 @@ package todo
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
 )
 
 func assertStrings(t *testing.T, got, want string) {
@@ -106,15 +108,14 @@ func TestDeleteTodo(t *testing.T) {
 	})
 }
 
-// func TestTodoJson(t *testing.T) {
-// 	todo_list := TodoList{[]string{"Iron", "Eat",
-// 		"Hunker"}}
-// 	var output []Todo
+func TestTodoJson(t *testing.T) {
+	todo_list := TodoList{generateTodoList()}
+	var output []Todo
 
-// 	output_json, _ := todo_list.List_as_json()
+	output_json, _ := todo_list.List_as_json()
 
-// 	json.Unmarshal(output_json, &output)
+	json.Unmarshal(output_json, &output)
 
-// 	want := `[{"Name": "Iron", "Status": "Complete"}, {"Name": "Eat", "Status": "Todo"}, {"Name": "Hunker", "Status": "Complete"}]`
-// 	require.JSONEq(t, want, string(output_json))
-// }
+	want := "[{\"Name\":\"Iron\",\"Status\":\"Todo\"},{\"Name\":\"Eat\",\"Status\":\"Complete\"},{\"Name\":\"Hunker\",\"Status\":\"Complete\"},{\"Name\":\"Mine\",\"Status\":\"Todo\"},{\"Name\":\"Shear\",\"Status\":\"Todo\"},{\"Name\":\"Cut\",\"Status\":\"Todo\"}]"
+	require.JSONEq(t, want, string(output_json))
+}
