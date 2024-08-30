@@ -11,7 +11,7 @@ import (
 func GoDo(db *todo.TodoList, finish chan<- bool) {
 	keepgoing := true
 	for keepgoing {
-		keepgoing = todo.ReadAndOutput(os.Stdin, os.Stdout, db)
+		keepgoing = todo.ReadAndOutput(os.Stdin, os.Stdout, db, "../todo/db.json")
 	}
 	finish <- true
 }
@@ -28,7 +28,7 @@ func main() {
 	fmt.Println("To end GoDo, either close the application or type Ctrl+C")
 	finishChannel := make(chan bool, 1)
 
-	go GoDo(&db, finishChannel)
+	GoDo(&db, finishChannel)
 
 	quitChannel := make(chan os.Signal, 1)
 	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)

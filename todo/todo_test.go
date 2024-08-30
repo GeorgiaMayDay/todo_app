@@ -75,8 +75,8 @@ func TestAddTodo(t *testing.T) {
 	todo_list.addTodo("Cook")
 
 	got := todo_list.List
-	want := []Todo{Todo{"Iron", "Todo"}, Todo{"Eat", "Complete"},
-		Todo{"Hunker", "Complete"}, Todo{"Mine", "Todo"}, Todo{"Shear", "Todo"}, Todo{"Cut", "Todo"}, Todo{"Cook", "Todo"}}
+	want := []Todo{{"Iron", "Todo"}, {"Eat", "Complete"},
+		{"Hunker", "Complete"}, {"Mine", "Todo"}, {"Shear", "Todo"}, {"Cut", "Todo"}, {"Cook", "Todo"}}
 
 	assertTodo(t, got, want)
 }
@@ -89,8 +89,8 @@ func TestDeleteTodo(t *testing.T) {
 		todo_list.deleteTodo("Mine")
 
 		got := todo_list.List
-		want := []Todo{Todo{"Iron", "Todo"}, Todo{"Eat", "Complete"},
-			Todo{"Hunker", "Complete"}, Todo{"Shear", "Todo"}, Todo{"Cut", "Todo"}}
+		want := []Todo{{"Iron", "Todo"}, {"Eat", "Complete"},
+			{"Hunker", "Complete"}, {"Shear", "Todo"}, {"Cut", "Todo"}}
 
 		assertTodo(t, got, want)
 	})
@@ -131,3 +131,31 @@ func TestTodoJson(t *testing.T) {
 		assertTodo(t, todo_list.List, generateTodoList())
 	})
 }
+
+// func TestCompleteTodo(t *testing.T) {
+
+// 	t.Run("complete Todo by name", func(t *testing.T) {
+
+// 		todo_list := TodoList{generateTodoList()}
+
+// 		todo_list.completeTodo("Mine")
+
+// 		got := todo_list.List
+// 		want := []Todo{{"Iron", "Todo"}, {"Eat", "Complete"}, {"Mine", "Complete"},
+// 			{"Hunker", "Complete"}, {"Shear", "Todo"}, {"Cut", "Todo"}}
+
+// 		assertTodo(t, got, want)
+// 	})
+
+// 	t.Run("complete Todo by number", func(t *testing.T) {
+
+// 		todo_list := TodoList{generateTodoList()}
+// 		todo_list.completeTodo("5")
+
+// 		got := todo_list.List
+// 		want := []Todo{{"Iron", "Todo"}, {"Eat", "Complete"},
+// 			{"Mine", "Todo"}, {"Hunker", "Complete"}, {"Shear", "Todo"}, {"Cut", "Todo"}}
+
+// 		assertTodo(t, got, want)
+// })
+// }

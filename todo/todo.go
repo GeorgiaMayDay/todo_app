@@ -22,6 +22,7 @@ type baseList interface {
 	addTodo(newTodo string)
 	deleteTodo(delTodo string)
 	List_as_json() ([]byte, error)
+	List_from_json([]byte)
 }
 
 type TodoList struct {
@@ -82,7 +83,7 @@ func Create_todo_list_with_json_file(file_name string) (TodoList, error) {
 		return current_Todo_list, err
 	}
 
-	json_for_todo_list, err := GetAll(*file)
+	json_for_todo_list, err := LoadState(*file)
 
 	if err != nil {
 		return current_Todo_list, fmt.Errorf("something went wrong reading the file")
