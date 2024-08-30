@@ -32,12 +32,22 @@ func (tl *TodoList) addTodo(newTodo string) {
 }
 
 func (tl *TodoList) deleteTodo(delTodo string) {
+	num, err := strconv.Atoi(delTodo)
 	var newTodoList []string
-	for _, todo := range tl.List {
-		if todo == delTodo {
-			continue
+	if err != nil {
+		for _, todo := range tl.List {
+			if todo == delTodo {
+				continue
+			}
+			newTodoList = append(newTodoList, todo)
 		}
-		newTodoList = append(newTodoList, todo)
+	} else {
+		for i, todo := range tl.List {
+			if i == num-1 {
+				continue
+			}
+			newTodoList = append(newTodoList, todo)
+		}
 	}
 	tl.List = tl.List[:len(tl.List)-1]
 	copy(tl.List, newTodoList)

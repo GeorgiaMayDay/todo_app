@@ -72,14 +72,31 @@ func TestAddTodo(t *testing.T) {
 }
 
 func TestDeleteTodo(t *testing.T) {
-	todo_list := TodoList{[]string{"Iron", "Eat",
-		"Hunker", "Mine", "Shear", "Cut"}}
+	t.Run("delete Todo by name", func(t *testing.T) {
 
-	todo_list.deleteTodo("Mine")
+		todo_list := TodoList{[]string{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut"}}
 
-	got := todo_list.List
-	want := []string{"Iron", "Eat",
-		"Hunker", "Shear", "Cut"}
+		todo_list.deleteTodo("Mine")
 
-	assertTodo(t, got, want)
+		got := todo_list.List
+		want := []string{"Iron", "Eat",
+			"Hunker", "Shear", "Cut"}
+
+		assertTodo(t, got, want)
+	})
+
+	t.Run("delete Todo by number", func(t *testing.T) {
+
+		todo_list := TodoList{[]string{"Iron", "Eat",
+			"Hunker", "Mine", "Shear", "Cut"}}
+
+		todo_list.deleteTodo("3")
+
+		got := todo_list.List
+		want := []string{"Iron", "Eat",
+			"Mine", "Shear", "Cut"}
+
+		assertTodo(t, got, want)
+	})
 }
