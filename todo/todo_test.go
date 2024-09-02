@@ -158,4 +158,16 @@ func TestCompleteTodo(t *testing.T) {
 
 		assertTodo(t, got, want)
 	})
+
+	t.Run("return Todo by number", func(t *testing.T) {
+
+		todo_list := TodoList{generateTodoList()}
+		todo_list.completeTodo("2")
+
+		got := todo_list.List
+		want := []Todo{{"Iron", "Todo"}, {"Eat", "Todo"}, {"Hunker", "Complete"},
+			{"Mine", "Todo"}, {"Shear", "Todo"}, {"Cut", "Todo"}}
+
+		assertTodo(t, got, want)
+	})
 }

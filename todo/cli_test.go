@@ -32,6 +32,10 @@ func (sl *SpyList) deleteTodo(delTodo string) {
 	sl.List = []string{}
 }
 
+func (sl *SpyList) completeTodo(delTodo string) {
+	sl.List = []string{"Complete"}
+}
+
 func (sl *SpyList) List_as_json() ([]byte, error) {
 	return []byte{}, fmt.Errorf("Filler")
 }

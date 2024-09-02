@@ -17,7 +17,7 @@ func Show_Instructions(printer io.Writer) {
 	fmt.Fprintln(printer, "type 1 to show the top 10 Todos")
 	fmt.Fprintln(printer, "type 2 to add a new Todo")
 	fmt.Fprintln(printer, "type 3 to delete a Todo, you can use the name or number")
-	fmt.Fprintln(printer, "type 4 to complete a Todo, you can use the name or number")
+	fmt.Fprintln(printer, "type 4 to complete or move back to todo a Todo, you can use the name or number")
 	fmt.Fprintln(printer, "type 5 and 6 to save or load respectively")
 	fmt.Fprintln(printer, "type 7 to see these instructions again")
 }
@@ -42,9 +42,10 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name stri
 		out_msg := "\"" + todo_name + "\" deleted"
 		fmt.Fprintln(out, out_msg)
 	case "4":
-		fmt.Fprint(out, "Not Implemented")
-
-	//TODO: NEEDS TESTS
+		todo_name := readLine(reader)
+		list.completeTodo(todo_name)
+		out_msg := "\"" + todo_name + "\" marked complete"
+		fmt.Fprintln(out, out_msg)
 	case "5":
 		file, _ := os.Create(storage_name)
 		json_obj, _ := list.List_as_json()

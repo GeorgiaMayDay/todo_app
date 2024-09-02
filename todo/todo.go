@@ -8,19 +8,27 @@ import (
 	"strconv"
 )
 
+type TodoStatus string
+
+const (
+	complete   TodoStatus = "Complete"
+	todoStatus TodoStatus = "Todo"
+)
+
 type Todo struct {
 	Name   string
-	Status string
+	Status TodoStatus
 }
 
 func (t Todo) String() string {
-	return t.Name + ": " + t.Status
+	return t.Name + ": " + string(t.Status)
 }
 
 type baseList interface {
 	outputTodos(writer io.Writer)
 	addTodo(newTodo string)
 	deleteTodo(delTodo string)
+	completeTodo(compTodo string)
 	List_as_json() ([]byte, error)
 	List_from_json([]byte)
 }
@@ -99,18 +107,26 @@ func (tl *TodoList) completeTodo(compTodo string) {
 	if err != nil {
 		for i, todo := range tl.List {
 			if todo.Name == compTodo {
-				todo.Status = "Complete"
-				tl.List[i] = todo
+				tl.List[i] = flipTodoStatus(todo)
 				break
 			}
 		}
 	} else {
 		for i, todo := range tl.List {
 			if i == num-1 {
-				todo.Status = "Complete"
-				tl.List[i] = todo
+				tl.List[i] = flipTodoStatus(todo)
 				break
 			}
 		}
+	}
+}
+
+func flipTodoStatus(todo Todo) Todo {
+	if todo.Status == complete {
+		todo.Status = todoStatus
+		return todo
+	} else {
+		todo.Status = complete
+		return todo
 	}
 }
