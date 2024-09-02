@@ -26,6 +26,7 @@ func main() {
 
 	fmt.Println("Welcome to GoDo, a application to help you manage you tasks")
 	fmt.Println("To end GoDo, either close the application or type Ctrl+C")
+	todo.Show_Instructions(os.Stdout)
 	finishChannel := make(chan bool, 1)
 
 	GoDo(&db, finishChannel)

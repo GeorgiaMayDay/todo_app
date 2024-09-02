@@ -12,7 +12,7 @@ func readLine(reader *bufio.Scanner) string {
 	return reader.Text()
 }
 
-func show_Instructions(printer io.Writer) {
+func Show_Instructions(printer io.Writer) {
 	fmt.Fprintln(printer, "To use:")
 	fmt.Fprintln(printer, "type 1 to show the top 10 Todos")
 	fmt.Fprintln(printer, "type 2 to add a new Todo")
@@ -48,13 +48,14 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name stri
 
 	//TODO: NEEDS TESTS
 	case "5":
-		json_obj, _ := LoadState(*file)
-		list.List_from_json(json_obj)
-	case "6":
 		json_obj, _ := list.List_as_json()
 		SaveState(*file, json_obj)
+	case "6":
+		json_obj, _ := LoadState(*file)
+		list.List_from_json(json_obj)
+
 	case "7":
-		show_Instructions(out)
+		Show_Instructions(out)
 	case "Quit":
 		return false
 	case "Q":
