@@ -93,3 +93,24 @@ func Create_todo_list_with_json_file(file_name string) (TodoList, error) {
 
 	return current_Todo_list, nil
 }
+
+func (tl *TodoList) completeTodo(compTodo string) {
+	num, err := strconv.Atoi(compTodo)
+	if err != nil {
+		for i, todo := range tl.List {
+			if todo.Name == compTodo {
+				todo.Status = "Complete"
+				tl.List[i] = todo
+				break
+			}
+		}
+	} else {
+		for i, todo := range tl.List {
+			if i == num-1 {
+				todo.Status = "Complete"
+				tl.List[i] = todo
+				break
+			}
+		}
+	}
+}
