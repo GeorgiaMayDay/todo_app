@@ -113,7 +113,7 @@ func TestTodoJson(t *testing.T) {
 		todo_list := TodoList{generateTodoList()}
 		var output []Todo
 
-		output_json, _ := todo_list.List_as_json()
+		output_json, _ := todo_list.list_as_json()
 
 		json.Unmarshal(output_json, &output)
 
@@ -126,7 +126,7 @@ func TestTodoJson(t *testing.T) {
 
 		json_of_list, _ := json.Marshal(generateTodoList())
 
-		todo_list.List_from_json(json_of_list)
+		todo_list.list_from_json(json_of_list)
 
 		assertTodo(t, todo_list.List, generateTodoList())
 	})

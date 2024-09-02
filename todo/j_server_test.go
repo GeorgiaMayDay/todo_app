@@ -1,18 +1,25 @@
 package todo
 
-// func TestServer(t *testing.T) {
-// 	t.Run("happy path test", func(t *testing.T) {
-// 		data := "hello, world"
-// 		store := &TodoList{t, data}
-// 		svr := Server(store)
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
-// 		request := httptest.NewRequest(http.MethodGet, "/", nil)
-// 		response := httptest.NewRecorder()
+func TestServer(t *testing.T) {
 
-// 		svr.ServeHTTP(response, request)
+	t.Run("happy path test", func(t *testing.T) {
+		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
+		defer cleanUpFile()
+		server, err := NewJsonTodoServer(tempfile.Name())
 
-// 		if response.Body.String() != data {
-// 			t.Errorf(`got "%s", want "%s"`, response.Body.String(), data)
-// 		}
-// 	})
-// }
+		request := httptest.NewRequest(http.MethodGet, "/GET", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertNoError(t, err)
+
+		assertStrings(t, response.Body.String(), generateTodoListAsString())
+	})
+}

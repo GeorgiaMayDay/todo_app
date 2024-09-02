@@ -29,8 +29,8 @@ type baseList interface {
 	addTodo(newTodo string)
 	deleteTodo(delTodo string)
 	completeTodo(compTodo string)
-	List_as_json() ([]byte, error)
-	List_from_json([]byte)
+	list_as_json() ([]byte, error)
+	list_from_json([]byte)
 }
 
 type TodoList struct {
@@ -74,17 +74,17 @@ func (tl *TodoList) deleteTodo(delTodo string) {
 	copy(tl.List, newTodoList)
 }
 
-func (tl *TodoList) List_as_json() ([]byte, error) {
+func (tl *TodoList) list_as_json() ([]byte, error) {
 	return json.MarshalIndent(tl.List, "", "    ")
 }
 
-func (tl *TodoList) List_from_json(json_list []byte) {
+func (tl *TodoList) list_from_json(json_list []byte) {
 	json.Unmarshal(json_list, &tl.List)
 }
 
 func Save_Todo_List_From_Json(list baseList, file_name string) {
 	file, _ := os.Create(file_name)
-	json_obj, err := list.List_as_json()
+	json_obj, err := list.list_as_json()
 	if err != nil {
 		fmt.Print(err.Error())
 	}
@@ -97,7 +97,7 @@ func Save_Todo_List_From_Json(list baseList, file_name string) {
 func Load_Todo_List_From_Json(list baseList, file_name string) {
 	file, _ := os.Open(file_name)
 	json_obj, _ := LoadState(*file)
-	list.List_from_json(json_obj)
+	list.list_from_json(json_obj)
 }
 
 func Load_New_Todo_List_From_Json(file_name string) (TodoList, error) {
@@ -115,7 +115,7 @@ func Load_New_Todo_List_From_Json(file_name string) (TodoList, error) {
 		return current_Todo_list, fmt.Errorf("something went wrong reading the file")
 	}
 
-	current_Todo_list.List_from_json(json_for_todo_list)
+	current_Todo_list.list_from_json(json_for_todo_list)
 
 	return current_Todo_list, nil
 }

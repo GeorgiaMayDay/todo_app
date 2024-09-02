@@ -16,6 +16,10 @@ func assertList(t *testing.T, got, want []string) {
 	}
 }
 
+func generateTodoListAsString() string {
+	return "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Todo\n5. Shear: Todo\n6. Cut: Todo\n"
+}
+
 type SpyList struct {
 	List []string
 }
@@ -36,11 +40,11 @@ func (sl *SpyList) completeTodo(delTodo string) {
 	sl.List = []string{"Complete"}
 }
 
-func (sl *SpyList) List_as_json() ([]byte, error) {
+func (sl *SpyList) list_as_json() ([]byte, error) {
 	return []byte{}, fmt.Errorf("Filler")
 }
 
-func (sl *SpyList) List_from_json([]byte) {
+func (sl *SpyList) list_from_json([]byte) {
 
 }
 
@@ -125,7 +129,7 @@ func TestCli(t *testing.T) {
 
 		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
 
-		want := "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Todo\n5. Shear: Todo\n6. Cut: Todo\n7. Scale: Todo\n"
+		want := generateTodoListAsString() + "7. Scale: Todo\n"
 		assertStrings(t, output.String(), want)
 		cleanFile()
 	})
