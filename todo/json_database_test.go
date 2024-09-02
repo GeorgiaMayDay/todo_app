@@ -36,7 +36,7 @@ func assertNoError(t testing.TB, err error) {
 	}
 }
 
-const InitialDataString = `[{"Name":"Iron","Status":"Todo"},{"Name":"Eat","Status":"Complete"},{"Name":"Hunker","Status":"Complete"},{"Name":"Mine","Status":"Todo"},{"Name":"Shear","Status":"Todo"},{"Name":"Cut","Status":"Todo"}]`
+const InitialDataString string = `[{"Name":"Iron","Status":"Todo"},{"Name":"Eat","Status":"Complete"},{"Name":"Hunker","Status":"Complete"},{"Name":"Mine","Status":"Todo"},{"Name":"Shear","Status":"Todo"},{"Name":"Cut","Status":"Todo"}]`
 
 func TestRead(t *testing.T) {
 

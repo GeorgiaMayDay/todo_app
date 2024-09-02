@@ -13,11 +13,7 @@ func LoadState(db os.File) ([]byte, error) {
 
 func SaveState(db os.File, json_obj []byte) error {
 	db.Seek(0, 0)
-	err := db.Truncate(0)
-	if err != nil {
-		return err
-	}
-	_, err = db.Write(json_obj)
+	_, err := db.Write(json_obj)
 	if err != nil {
 		return err
 	}

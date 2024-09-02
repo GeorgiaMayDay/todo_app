@@ -28,8 +28,6 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name stri
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 
-	file, _ := os.Open(storage_name)
-
 	switch option {
 	case "1":
 		list.outputTodos(out)
@@ -48,9 +46,14 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name stri
 
 	//TODO: NEEDS TESTS
 	case "5":
+		file, _ := os.Create(storage_name)
 		json_obj, _ := list.List_as_json()
-		SaveState(*file, json_obj)
+		err := SaveState(*file, json_obj)
+		if err != nil {
+			fmt.Fprintln(out, err.Error())
+		}
 	case "6":
+		file, _ := os.Open(storage_name)
 		json_obj, _ := LoadState(*file)
 		list.List_from_json(json_obj)
 

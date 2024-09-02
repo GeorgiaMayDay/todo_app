@@ -92,18 +92,37 @@ func TestCli(t *testing.T) {
 		assertList(t, todoSpy.List, want)
 	})
 
-	// t.Run("Save and load work", func(t *testing.T) {
-	// 	_, cleanFile := createTempFile(t, InitialDataString)
-	// 	defer cleanFile()
-	// 	todoSpy := &SpyList{List: []string{"Call"}}
-	// 	output := &bytes.Buffer{}
+	t.Run("Load work", func(t *testing.T) {
+		tmpfile, cleanFile := createTempFile(t, InitialDataString)
 
-	// 	in := strings.NewReader("5\n6")
+		todoSpy := &TodoList{List: generateTodoList10()}
+		output := &bytes.Buffer{}
 
-	// 	ReadAndOutput(in, output, todoSpy, test_file_name)
+		in := strings.NewReader("6")
 
-	// 	want := []string{}
+		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
 
-	// 	assertList(t, todoSpy.List, want)
-	// })
+		assertTodo(t, todoSpy.List, generateTodoList())
+		cleanFile()
+	})
+
+	t.Run("Save work", func(t *testing.T) {
+		tmpfile, cleanFile := createTempFile(t, InitialDataString)
+
+		todo_list_prep := append(generateTodoList(), Todo{"Scale", "Todo"})
+		todoSpy := &TodoList{List: todo_list_prep}
+		output := &bytes.Buffer{}
+
+		in := strings.NewReader("5")
+
+		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
+
+		in = strings.NewReader("1")
+
+		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
+
+		want := "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Todo\n5. Shear: Todo\n6. Cut: Todo\n7. Scale: Todo\n"
+		assertStrings(t, output.String(), want)
+		cleanFile()
+	})
 }

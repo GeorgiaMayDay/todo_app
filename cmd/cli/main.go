@@ -11,14 +11,14 @@ import (
 func GoDo(db *todo.TodoList, finish chan<- bool) {
 	keepgoing := true
 	for keepgoing {
-		keepgoing = todo.ReadAndOutput(os.Stdin, os.Stdout, db, "../todo/db.json")
+		keepgoing = todo.ReadAndOutput(os.Stdin, os.Stdout, db, "../../todo/db.json")
 	}
 	finish <- true
 }
 
 func main() {
 
-	db, err := todo.Create_todo_list_with_json_file("../todo/db.json")
+	db, err := todo.Create_todo_list_with_json_file("../../todo/db.json")
 	if err != nil {
 		fmt.Println("There was an issue accessing the saved todo list and for this session you'll be working from a fresh jotpad!")
 		fmt.Println(err.Error())
