@@ -82,7 +82,25 @@ func (tl *TodoList) List_from_json(json_list []byte) {
 	json.Unmarshal(json_list, &tl.List)
 }
 
-func Create_todo_list_with_json_file(file_name string) (TodoList, error) {
+func Save_Todo_List_From_Json(list baseList, file_name string) {
+	file, _ := os.Create(file_name)
+	json_obj, err := list.List_as_json()
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	err = SaveState(*file, json_obj)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+}
+
+func Load_Todo_List_From_Json(list baseList, file_name string) {
+	file, _ := os.Open(file_name)
+	json_obj, _ := LoadState(*file)
+	list.List_from_json(json_obj)
+}
+
+func Load_New_Todo_List_From_Json(file_name string) (TodoList, error) {
 
 	current_Todo_list := TodoList{List: []Todo{}}
 

@@ -18,7 +18,7 @@ func GoDo(db *todo.TodoList, finish chan<- bool) {
 
 func main() {
 
-	db, err := todo.Create_todo_list_with_json_file("../../todo/db.json")
+	db, err := todo.Load_New_Todo_List_From_Json("../../todo/db.json")
 	if err != nil {
 		fmt.Println("There was an issue accessing the saved todo list and for this session you'll be working from a fresh jotpad!")
 		fmt.Println(err.Error())

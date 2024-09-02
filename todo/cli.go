@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 )
 
 func readLine(reader *bufio.Scanner) string {
@@ -47,17 +46,13 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name stri
 		out_msg := "\"" + todo_name + "\" marked complete"
 		fmt.Fprintln(out, out_msg)
 	case "5":
-		file, _ := os.Create(storage_name)
-		json_obj, _ := list.List_as_json()
-		err := SaveState(*file, json_obj)
-		if err != nil {
-			fmt.Fprintln(out, err.Error())
-		}
+		Save_Todo_List_From_Json(list, storage_name)
+		out_msg := "Current Todo List Saved"
+		fmt.Println(out, out_msg)
 	case "6":
-		file, _ := os.Open(storage_name)
-		json_obj, _ := LoadState(*file)
-		list.List_from_json(json_obj)
-
+		Load_Todo_List_From_Json(list, storage_name)
+		out_msg := "Todo List Loaded"
+		fmt.Println(out, out_msg)
 	case "7":
 		Show_Instructions(out)
 	case "Quit":

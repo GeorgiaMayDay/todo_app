@@ -1,4 +1,10 @@
 [
-    {"Name": "Show how GoDo app works",
-    "Status": "Todo"}
+    {
+        "Name": "Show how GoDo app works",
+        "Status": "Todo"
+    },
+    {
+        "Name": "Test Cli",
+        "Status": "Todo"
+    }
 ]

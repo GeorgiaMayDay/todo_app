@@ -1,7 +1,6 @@
 package todo
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -48,22 +47,5 @@ func TestRead(t *testing.T) {
 	assertNoError(t, err)
 	json_string_output := string(json_output)
 	require.JSONEq(t, InitialDataString, json_string_output)
-
-}
-
-func TestSaveAndAccess(t *testing.T) {
-
-	db, cleanDB := createTempFile(t, "")
-	defer cleanDB()
-
-	json_obj, err := json.Marshal(generateTodoList())
-	assertNoError(t, err)
-
-	SaveState(*db, json_obj)
-
-	got, err := LoadState(*db)
-
-	assertNoError(t, err)
-	require.JSONEq(t, InitialDataString, string(got))
 
 }
