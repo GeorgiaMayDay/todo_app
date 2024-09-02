@@ -20,6 +20,6 @@ func TestServer(t *testing.T) {
 
 		assertNoError(t, err)
 
-		assertStrings(t, response.Body.String(), generateTodoListAsString())
+		assertStrings(t, response.Body.String(), gen)
 	})
 }

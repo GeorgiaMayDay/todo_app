@@ -20,6 +20,9 @@ func generateTodoListAsString() string {
 	return "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Todo\n5. Shear: Todo\n6. Cut: Todo\n"
 }
 
+///TODO: NEED TO BE UPDATED FOR MY NEW WORLD ORDER
+// APIs
+
 type SpyList struct {
 	List []string
 }
