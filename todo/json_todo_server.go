@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -13,12 +14,15 @@ const textType = "text"
 
 func NewJsonTodoServer(file_name string) (*TodoServer, error) {
 	List, err := Load_New_Todo_List_From_Json(file_name)
+	if err != nil {
+		fmt.Println("There was an issue accessing the saved todo list and for this session you'll be working from a fresh jotpad!")
+	}
 	p := new(TodoServer)
 
 	p.store = List
 
 	router := http.NewServeMux()
-	router.Handle("/GET", http.HandlerFunc(p.getBoardHandler))
+	router.Handle("/get_todo_list", http.HandlerFunc(p.getBoardHandler))
 
 	p.Handler = router
 

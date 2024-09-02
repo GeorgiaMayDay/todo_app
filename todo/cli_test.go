@@ -64,7 +64,7 @@ func TestCli(t *testing.T) {
 
 			in := input
 
-			ReadAndOutput(in, output, todoSpy, test_file_name)
+			ReadAndOutput(in, output, todoSpy, test_file_name, "")
 
 			assertStrings(t, output.String(), want)
 		}
@@ -78,7 +78,7 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("2\nCalled")
 
-		ReadAndOutput(in, output, todoSpy, test_file_name)
+		ReadAndOutput(in, output, todoSpy, test_file_name, "")
 
 		want := []string{"Called"}
 
@@ -93,7 +93,7 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("3\nCall")
 
-		ReadAndOutput(in, output, todoSpy, test_file_name)
+		ReadAndOutput(in, output, todoSpy, test_file_name, "")
 
 		want := []string{}
 
@@ -108,7 +108,7 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("6")
 
-		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
+		ReadAndOutput(in, output, todoSpy, tmpfile.Name(), "")
 
 		assertTodo(t, todoSpy.List, generateTodoList())
 		cleanFile()
@@ -123,11 +123,11 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("5")
 
-		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
+		ReadAndOutput(in, output, todoSpy, tmpfile.Name(), "")
 
 		in = strings.NewReader("1")
 
-		ReadAndOutput(in, output, todoSpy, tmpfile.Name())
+		ReadAndOutput(in, output, todoSpy, tmpfile.Name(), "")
 
 		want := generateTodoListAsString() + "7. Scale: Todo\n"
 		assertStrings(t, output.String(), want)

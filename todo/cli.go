@@ -2,8 +2,11 @@ package todo
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"net/http"
+	"os"
 )
 
 func readLine(reader *bufio.Scanner) string {
@@ -23,13 +26,25 @@ func Show_Instructions(printer io.Writer) {
 
 var invalid_opt_msg = "You've entered an invalid option"
 
-func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name string) bool {
+func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name, api_address string) bool {
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 
 	switch option {
 	case "1":
-		list.outputTodos(out)
+		resp, err := http.Get(api_address + "/get_todo_list")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		output := new(bytes.Buffer)
+		_, err = output.ReadFrom(resp.Body)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer resp.Body.Close()
+		fmt.Fprintln(out, output)
 	case "2":
 		todo_name := readLine(reader)
 		list.addTodo(todo_name)
