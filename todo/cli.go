@@ -3,11 +3,14 @@ package todo
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 )
+
+const jsonContentType string = "application/json"
 
 func readLine(reader *bufio.Scanner) string {
 	reader.Scan()
@@ -26,7 +29,7 @@ func Show_Instructions(printer io.Writer) {
 
 var invalid_opt_msg = "You've entered an invalid option"
 
-func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name, api_address string) bool {
+func ReadAndOutput(in io.Reader, out io.Writer, list baseList, api_address string) bool {
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 
@@ -35,7 +38,6 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name, api
 		resp, err := http.Get(api_address + "/get_todo_list")
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
 		}
 		output := new(bytes.Buffer)
 		_, err = output.ReadFrom(resp.Body)
@@ -44,16 +46,32 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name, api
 			os.Exit(1)
 		}
 		defer resp.Body.Close()
-		fmt.Fprintln(out, output)
+		fmt.Fprint(out, output)
 	case "2":
-		todo_name := readLine(reader)
-		list.addTodo(todo_name)
-		out_msg := "\"" + todo_name + "\" added"
+		input := readLine(reader)
+		todo_name, err := json.Marshal(input)
+		if err != nil {
+			fmt.Fprintln(out, "This is an invalid name")
+			break
+		}
+		_, err = http.Post(api_address+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		if err != nil {
+			fmt.Println(err)
+		}
+		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
 	case "3":
-		todo_name := readLine(reader)
-		list.deleteTodo(todo_name)
-		out_msg := "\"" + todo_name + "\" deleted"
+		input := readLine(reader)
+		todo_name, err := json.Marshal(input)
+		if err != nil {
+			fmt.Fprintln(out, "This is an invalid name")
+			break
+		}
+		_, err = http.Post(api_address+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		if err != nil {
+			fmt.Println(err)
+		}
+		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
 	case "4":
 		todo_name := readLine(reader)
@@ -61,11 +79,11 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, storage_name, api
 		out_msg := "\"" + todo_name + "\" marked complete"
 		fmt.Fprintln(out, out_msg)
 	case "5":
-		Save_Todo_List_From_Json(list, storage_name)
+		// Save_Todo_List_From_Json(list, storage_name)
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
-		Load_Todo_List_From_Json(list, storage_name)
+		// Load_Todo_List_From_Json(list, storage_name)
 		out_msg := "Todo List Loaded"
 		fmt.Println(out, out_msg)
 	case "7":

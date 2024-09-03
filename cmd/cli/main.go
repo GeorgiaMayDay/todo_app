@@ -11,7 +11,7 @@ import (
 func GoDo(db *todo.TodoList, finish chan<- bool) {
 	keepgoing := true
 	for keepgoing {
-		keepgoing = todo.ReadAndOutput(os.Stdin, os.Stdout, db, json_file_name, api_address)
+		keepgoing = todo.ReadAndOutput(os.Stdin, os.Stdout, db, api_address)
 	}
 	finish <- true
 }

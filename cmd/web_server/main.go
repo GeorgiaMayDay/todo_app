@@ -15,4 +15,5 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	go log.Fatal(http.ListenAndServe(":5000", server))
+	fmt.Printf("Set Up!")
 }

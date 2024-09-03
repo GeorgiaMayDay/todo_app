@@ -139,6 +139,24 @@ func (tl *TodoList) completeTodo(compTodo string) {
 	}
 }
 
+func checkTodo(list []Todo, todo_find string) (Todo, error) {
+	num, err := strconv.Atoi(todo_find)
+	if err != nil {
+		for _, todo := range list {
+			if todo.Name == todo_find {
+				return todo, nil
+			}
+		}
+	} else {
+		for i, todo := range list {
+			if i == num-1 {
+				return todo, nil
+			}
+		}
+	}
+	return Todo{}, fmt.Errorf("todo wasn't found")
+}
+
 func flipTodoStatus(todo Todo) Todo {
 	if todo.Status == complete {
 		todo.Status = todoStatus
