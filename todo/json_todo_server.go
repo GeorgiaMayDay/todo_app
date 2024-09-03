@@ -9,6 +9,7 @@ import (
 
 type TodoServer struct {
 	store TodoList
+	file  string
 	http.Handler
 }
 
@@ -22,6 +23,7 @@ func NewJsonTodoServer(file_name string) (*TodoServer, error) {
 	p := new(TodoServer)
 
 	p.store = List
+	p.file = file_name
 
 	router := http.NewServeMux()
 	router.Handle("/get_todo_list", http.HandlerFunc(p.getBoardHandler))
@@ -29,6 +31,8 @@ func NewJsonTodoServer(file_name string) (*TodoServer, error) {
 	router.Handle("/check_todo/", http.HandlerFunc(p.checkTodoHandler))
 	router.Handle("/delete_todo", http.HandlerFunc(p.deleteTodoHandler))
 	router.Handle("/complete_todo", http.HandlerFunc(p.completeTodoHandler))
+	router.Handle("/save", http.HandlerFunc(p.saveTodoHandler))
+	router.Handle("/load", http.HandlerFunc(p.loadTodoHandler))
 
 	p.Handler = router
 
@@ -62,6 +66,16 @@ func (p *TodoServer) completeTodoHandler(w http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&output)
 	p.store.completeTodo(string(output[:]))
+}
+
+func (p *TodoServer) saveTodoHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	Save_Todo_List_From_Json(&p.store, p.file)
+}
+
+func (p *TodoServer) loadTodoHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	Load_Todo_List_From_Json(&p.store, p.file)
 }
 
 func (p *TodoServer) checkTodoHandler(w http.ResponseWriter, r *http.Request) {

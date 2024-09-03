@@ -81,11 +81,19 @@ func ReadAndOutput(in io.Reader, out io.Writer, list baseList, api_address strin
 		out_msg := "\"" + input + "\" complete"
 		fmt.Fprintln(out, out_msg)
 	case "5":
-		// Save_Todo_List_From_Json(list, storage_name)
+		_, err := http.Get(api_address + "/save")
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
-		// Load_Todo_List_From_Json(list, storage_name)
+		_, err := http.Get(api_address + "/load")
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
 		out_msg := "Todo List Loaded"
 		fmt.Println(out, out_msg)
 	case "7":
