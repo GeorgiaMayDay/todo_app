@@ -28,6 +28,7 @@ func NewJsonTodoServer(file_name string) (*TodoServer, error) {
 	router.Handle("/add_todo", http.HandlerFunc(p.addTodoHandler))
 	router.Handle("/check_todo/", http.HandlerFunc(p.checkTodoHandler))
 	router.Handle("/delete_todo", http.HandlerFunc(p.deleteTodoHandler))
+	router.Handle("/complete_todo", http.HandlerFunc(p.completeTodoHandler))
 
 	p.Handler = router
 
@@ -53,6 +54,14 @@ func (p *TodoServer) deleteTodoHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&output)
 	p.store.deleteTodo(string(output[:]))
+}
+
+func (p *TodoServer) completeTodoHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", textType)
+	var output string
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&output)
+	p.store.completeTodo(string(output[:]))
 }
 
 func (p *TodoServer) checkTodoHandler(w http.ResponseWriter, r *http.Request) {

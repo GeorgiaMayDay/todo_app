@@ -17,15 +17,10 @@ func GoDo(db *todo.TodoList, finish chan<- bool) {
 }
 
 const api_address string = "http://localhost:5000"
-const json_file_name string = "../../todo/db.json"
 
 func main() {
 
-	db, err := todo.Load_New_Todo_List_From_Json(json_file_name)
-	if err != nil {
-		fmt.Println("There was an issue accessing the saved todo list and for this session you'll be working from a fresh jotpad!")
-		fmt.Println(err.Error())
-	}
+	db := todo.TodoList{}
 
 	fmt.Println("Welcome to GoDo, a application to help you manage you tasks")
 	fmt.Println("To end GoDo, either close the application or type Ctrl+C")
