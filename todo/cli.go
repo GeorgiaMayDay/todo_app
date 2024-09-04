@@ -125,7 +125,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 func get_Svr(url string) (*http.Response, error, bool, bool, error) {
 	resp, err := http.Get(url)
 	if resp == nil {
-		return nil, nil, true, true, &RequestError{0, fmt.Errorf("No Response")}
+		return nil, nil, true, true, &RequestError{0, fmt.Errorf("no response from server")}
 	}
 	if string(resp.Status[0]) != "2" {
 		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
@@ -138,6 +138,9 @@ func get_Svr(url string) (*http.Response, error, bool, bool, error) {
 
 func post_Svr(url, ct string, reader io.Reader) (*http.Response, error, bool, bool, error) {
 	resp, err := http.Post(url, ct, reader)
+	if resp == nil {
+		return nil, nil, true, true, &RequestError{0, fmt.Errorf("no response from server")}
+	}
 	if string(resp.Status[0]) != "2" {
 		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
 	}
