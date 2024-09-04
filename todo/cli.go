@@ -27,20 +27,34 @@ func Show_Instructions(printer io.Writer) {
 	fmt.Fprintln(printer, "type 7 to see these instructions again")
 }
 
-var invalid_opt_msg = "You've entered an invalid option"
+const invalid_opt_msg string = "You've entered an invalid option"
 
-func ReadAndOutput(in io.Reader, out io.Writer, api_address string) bool {
+type RequestError struct {
+	StatusCode int
+
+	Err error
+}
+
+func (r *RequestError) Error() string {
+	error_msg := "There was no specific error"
+	if r.Err != nil {
+		error_msg = r.Err.Error()
+	}
+	return fmt.Sprintf("There was an error connecting to the server: status %d: err %s", r.StatusCode, error_msg)
+}
+
+func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error) {
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 
 	switch option {
 	case "1":
-		resp, err := http.Get(api_address + "/get_todo_list")
-		if err != nil {
-			fmt.Println(err)
+		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/get_todo_list")
+		if shouldExit {
+			return keepgoing, server_err
 		}
 		output := new(bytes.Buffer)
-		_, err = output.ReadFrom(resp.Body)
+		_, err := output.ReadFrom(resp.Body)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -48,74 +62,97 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) bool {
 		defer resp.Body.Close()
 		fmt.Fprint(out, output)
 	case "2":
-		input, todo_name := getNameFromScanner(reader, out)
-		if input == "" {
-			break
-		}
-		_, err := http.Post(api_address+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
-			fmt.Println(err)
+			return true, err
+		}
+		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		if shouldExit {
+			return keepgoing, server_err
 		}
 		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
 	case "3":
-		input, todo_name := getNameFromScanner(reader, out)
-		if input == "" {
-			break
-		}
-		_, err := http.Post(api_address+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
-			fmt.Println(err)
+			return true, err
+		}
+		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		if shouldExit {
+			return keepgoing, server_err
 		}
 		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
 	case "4":
-		input, todo_name := getNameFromScanner(reader, out)
-		if input == "" {
-			break
-		}
-		_, err := http.Post(api_address+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
-			fmt.Println(err)
+			return true, err
+		}
+		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		if shouldExit {
+			return keepgoing, server_err
 		}
 		out_msg := "\"" + input + "\" complete"
 		fmt.Fprintln(out, out_msg)
 	case "5":
-		_, err := http.Get(api_address + "/save")
-		if err != nil {
-			fmt.Println(err)
-			return false
+		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/save")
+		if shouldExit {
+			return keepgoing, server_err
 		}
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
-		_, err := http.Get(api_address + "/load")
-		if err != nil {
-			fmt.Println(err)
-			return false
+		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
+		if shouldExit {
+			return keepgoing, server_err
 		}
 		out_msg := "Todo List Loaded"
 		fmt.Println(out, out_msg)
 	case "7":
 		Show_Instructions(out)
 	case "Quit":
-		return false
+		return false, nil
 	case "Q":
-		return false
+		return false, nil
 	case "":
-		return false
+		return false, nil
 	default:
 		fmt.Fprintln(out, invalid_opt_msg)
 	}
-	return true
+	return true, nil
 }
 
-func getNameFromScanner(reader *bufio.Scanner, out io.Writer) (string, []byte) {
+func get_Svr(url string) (*http.Response, error, bool, bool, error) {
+	resp, err := http.Get(url)
+	if resp == nil {
+		return nil, nil, true, true, &RequestError{0, fmt.Errorf("No Response")}
+	}
+	if string(resp.Status[0]) != "2" {
+		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
+	}
+	if err != nil {
+		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
+	}
+	return resp, err, false, false, nil
+}
+
+func post_Svr(url, ct string, reader io.Reader) (*http.Response, error, bool, bool, error) {
+	resp, err := http.Post(url, ct, reader)
+	if string(resp.Status[0]) != "2" {
+		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
+	}
+	if err != nil {
+		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
+	}
+	return resp, err, false, false, nil
+}
+
+func getNameFromScanner(reader *bufio.Scanner, out io.Writer) (string, []byte, error) {
 	input := readLine(reader)
 	todo_name, err := json.Marshal(input)
 	if err != nil {
 		fmt.Fprintln(out, "This is an invalid name")
-		return "", nil
+		return "", nil, fmt.Errorf("%s: This is an invalid name", string(todo_name))
 	}
-	return input, todo_name
+	return input, todo_name, nil
 }

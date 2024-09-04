@@ -67,16 +67,39 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("1")
 
-		ReadAndOutput(in, output, svrUrl)
+		_, err := ReadAndOutput(in, output, svrUrl)
+
+		assertNoError(t, err)
 
 		assertStrings(t, output.String(), generateTodoListAsString())
 	})
 
-	t.Run("That CLI can graceful handle server not responding", func(t *testing.T) {
+	t.Run("That CLI can graceful handle server sending a bad status back", func(t *testing.T) {
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text")
-			fmt.Fprint(w, generateTodoListAsString())
+			w.WriteHeader(http.StatusBadGateway)
+		}))
+		defer testSvr.Close()
+
+		svrUrl := testSvr.URL
+
+		in := strings.NewReader("1")
+
+		_, err := ReadAndOutput(in, output, svrUrl)
+
+		want := RequestError{502, nil}
+
+		if cmp.Equal(err, want) {
+			t.Errorf("got an error but got %s, when wants %s", err.Error(), want.Error())
+		}
+
+		assertStrings(t, output.String(), "")
+	})
+
+	t.Run("That CLI can graceful handle no server", func(t *testing.T) {
+		output := &bytes.Buffer{}
+		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusBadGateway)
 		}))
 		testSvr.Close()
 
@@ -84,7 +107,13 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("1")
 
-		ReadAndOutput(in, output, svrUrl)
+		_, err := ReadAndOutput(in, output, svrUrl)
+
+		want := RequestError{502, nil}
+
+		if cmp.Equal(err, want) {
+			t.Errorf("got an error but got %s, when wants %s", err.Error(), want.Error())
+		}
 
 		assertStrings(t, output.String(), "")
 	})
