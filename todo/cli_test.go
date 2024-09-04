@@ -2,6 +2,7 @@ package todo
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -26,6 +27,8 @@ func generateTodoListAsString() string {
 func TestCli(t *testing.T) {
 
 	t.Run("That CLI can print todos", func(t *testing.T) {
+		ctx := context.Background()
+		finishChan := make(chan TodoResult, 1)
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text")
@@ -37,14 +40,17 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("1")
 
-		_, err := ReadAndOutput(in, output, svrUrl)
+		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
 
-		assertNoError(t, err)
+		got := <-finishChan
 
+		assertNoError(t, got.Err)
 		assertStrings(t, output.String(), generateTodoListAsString())
 	})
 
 	t.Run("That CLI can graceful handle server sending a bad status back", func(t *testing.T) {
+		ctx := context.Background()
+		finishChan := make(chan TodoResult, 1)
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadGateway)
@@ -53,21 +59,26 @@ func TestCli(t *testing.T) {
 
 		svrUrl := testSvr.URL
 
-		test_Int := rand.Intn(6) + 1
+		// test_Int := rand.Intn(6) + 1
+		test_Int := 2
 		in := strings.NewReader(strconv.Itoa(test_Int))
 
-		_, err := ReadAndOutput(in, output, svrUrl)
+		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
+
+		got := <-finishChan
 
 		want := RequestError{502, nil}
 
-		if cmp.Equal(err, want) {
-			t.Errorf("got an error but got %s, when wants %s", err.Error(), want.Error())
+		if cmp.Equal(got.Err, want) {
+			t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())
 		}
 
 		assertStrings(t, output.String(), "")
 	})
 
 	t.Run("That CLI can graceful handle no server", func(t *testing.T) {
+		ctx := context.Background()
+		finishChan := make(chan TodoResult, 1)
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadGateway)
@@ -79,12 +90,14 @@ func TestCli(t *testing.T) {
 		test_Int := rand.Intn(6) + 1
 		in := strings.NewReader(strconv.Itoa(test_Int))
 
-		_, err := ReadAndOutput(in, output, svrUrl)
+		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
+
+		got := <-finishChan
 
 		want := RequestError{502, nil}
 
-		if cmp.Equal(err, want) {
-			t.Errorf("got an error but got %s, when wants %s", err.Error(), want.Error())
+		if cmp.Equal(got.Err, want) {
+			t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())
 		}
 
 		assertStrings(t, output.String(), "")

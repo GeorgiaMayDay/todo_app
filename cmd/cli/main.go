@@ -1,23 +1,34 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 	"todo_app/todo"
 )
 
-func GoDo(finish chan<- bool) {
+func GoDo(parentCtx context.Context, parentCancel context.CancelFunc) {
+	defer parentCancel()
+	finishChan := make(chan todo.TodoResult, 1)
 	keepgoing := true
-	var err error = nil
 	for keepgoing {
-		keepgoing, err = todo.ReadAndOutput(os.Stdin, os.Stdout, api_address)
-		if err != nil {
-			fmt.Println(err.Error())
+		ctx, cancel := context.WithTimeout(parentCtx, 1*time.Second)
+		defer cancel()
+		go todo.ReadAndOutput(ctx, os.Stdin, os.Stdout, api_address, finishChan)
+		select {
+		case result := <-finishChan:
+			if result.Err != nil {
+				fmt.Println(result.Err.Error())
+			}
+			keepgoing = result.Stop
+		case <-ctx.Done():
+			todo.InfoLog("CLI", "CLI stopped (using context)")
+			continue
 		}
 	}
-	finish <- true
 }
 
 const api_address string = "http://localhost:5000"
@@ -33,13 +44,12 @@ func main() {
 	check(err)
 	todo.SetUpLogger(f)
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	fmt.Println("Welcome to GoDo, a application to help you manage you tasks")
 	fmt.Println("To end GoDo, either close the application or type Ctrl+C")
 	todo.Show_Instructions(os.Stdout)
-
-	finishChannel := make(chan bool, 1)
-
-	go GoDo(finishChannel)
+	go GoDo(ctx, cancel)
 	todo.InfoLog("CLI", "CLI started")
 
 	quitChannel := make(chan os.Signal, 1)
@@ -48,7 +58,7 @@ func main() {
 	select {
 	case <-quitChannel:
 		fmt.Println("Adios!")
-	case <-finishChannel:
+	case <-ctx.Done():
 		fmt.Println("Adios!")
 	}
 }

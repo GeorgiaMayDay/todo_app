@@ -3,11 +3,13 @@ package todo
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 const jsonContentType string = "application/json"
@@ -29,6 +31,11 @@ func Show_Instructions(printer io.Writer) {
 
 const invalid_opt_msg string = "You've entered an invalid option"
 
+type TodoResult struct {
+	Stop bool
+	Err  error
+}
+
 type RequestError struct {
 	StatusCode int
 
@@ -43,16 +50,18 @@ func (r *RequestError) Error() string {
 	return fmt.Sprintf("There was an error connecting to the server: status %d: err %s", r.StatusCode, error_msg)
 }
 
-func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error) {
+func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address string, result chan<- TodoResult) {
+	ch := make(chan TodoResult, 1)
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 
 	switch option {
 	case "1":
 		InfoLog("CLI", "Getting TODO list")
+		time.Sleep(4 * time.Second)
 		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/get_todo_list")
 		if shouldExit {
-			return keepgoing, server_err
+			ch <- TodoResult{keepgoing, server_err}
 		}
 		output := new(bytes.Buffer)
 		_, err := output.ReadFrom(resp.Body)
@@ -60,17 +69,18 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		defer resp.Body.Close()
+		resp.Body.Close()
 		fmt.Fprint(out, output)
+		result <- TodoResult{true, nil}
 	case "2":
 		InfoLog("CLI", "Adding Todo")
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
-			return true, err
+			result <- TodoResult{true, err}
 		}
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
-			return keepgoing, server_err
+			result <- TodoResult{keepgoing, server_err}
 		}
 		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
@@ -78,11 +88,11 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		InfoLog("CLI", "Delete Todo")
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
-			return true, err
+			result <- TodoResult{true, err}
 		}
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
-			return keepgoing, server_err
+			result <- TodoResult{keepgoing, server_err}
 		}
 		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
@@ -90,11 +100,11 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		InfoLog("CLI", "Completing Todo")
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
-			return true, err
+			result <- TodoResult{true, err}
 		}
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
-			return keepgoing, server_err
+			result <- TodoResult{keepgoing, server_err}
 		}
 		out_msg := "\"" + input + "\" complete"
 		fmt.Fprintln(out, out_msg)
@@ -102,7 +112,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		InfoLog("CLI", "Saving Todo List")
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/save")
 		if shouldExit {
-			return keepgoing, server_err
+			result <- TodoResult{keepgoing, server_err}
 		}
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
@@ -110,22 +120,18 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		InfoLog("CLI", "Loading Todo List")
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
 		if shouldExit {
-			return keepgoing, server_err
+			result <- TodoResult{keepgoing, server_err}
 		}
 		out_msg := "Todo List Loaded"
 		fmt.Println(out, out_msg)
 	case "7":
 		Show_Instructions(out)
-	case "Quit":
-		return false, nil
-	case "Q":
-		return false, nil
-	case "":
-		return false, nil
+	case "Quit", "q", "Q", "":
+		result <- TodoResult{false, nil}
 	default:
 		fmt.Fprintln(out, invalid_opt_msg)
+		result <- TodoResult{true, nil}
 	}
-	return true, nil
 }
 
 func get_Svr(url string) (*http.Response, error, bool, bool, error) {
