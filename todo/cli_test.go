@@ -3,7 +3,6 @@ package todo
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -22,37 +21,6 @@ func assertList(t *testing.T, got, want []string) {
 
 func generateTodoListAsString() string {
 	return "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Todo\n5. Shear: Todo\n6. Cut: Todo\n"
-}
-
-///TODO: NEED TO BE UPDATED FOR MY NEW WORLD ORDER
-// APIs
-
-type SpyList struct {
-	List []string
-}
-
-func (sl *SpyList) outputTodos(writer io.Writer) {
-	fmt.Fprint(writer, "Called")
-}
-
-func (sl *SpyList) addTodo(newTodo string) {
-	sl.List = append(sl.List, newTodo)
-}
-
-func (sl *SpyList) deleteTodo(delTodo string) {
-	sl.List = []string{}
-}
-
-func (sl *SpyList) completeTodo(delTodo string) {
-	sl.List = []string{"Complete"}
-}
-
-func (sl *SpyList) list_as_json() ([]byte, error) {
-	return []byte{}, fmt.Errorf("Filler")
-}
-
-func (sl *SpyList) list_from_json([]byte) {
-
 }
 
 func TestCli(t *testing.T) {
