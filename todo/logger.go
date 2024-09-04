@@ -12,13 +12,19 @@ func SetUpLogger(f *os.File) {
 }
 
 func InfoLog(loc, msg string) {
-	logger.Info(loc, "Message", msg)
+	if logger != nil {
+		logger.Info(loc, "Message", msg)
+	}
 }
 
 func ErrorLog(loc, msg string) {
-	logger.Error(loc, "Message", msg)
+	if logger != nil {
+		logger.Error(loc, "Message", msg)
+	}
 }
 
 func WarnLog(loc, msg string) {
-	logger.Warn(loc, "Message", msg)
+	if logger != nil {
+		logger.Warn(loc, "Message", msg)
+	}
 }

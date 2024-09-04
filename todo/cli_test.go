@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -83,7 +85,8 @@ func TestCli(t *testing.T) {
 
 		svrUrl := testSvr.URL
 
-		in := strings.NewReader("1")
+		test_Int := rand.Intn(6) + 1
+		in := strings.NewReader(strconv.Itoa(test_Int))
 
 		_, err := ReadAndOutput(in, output, svrUrl)
 
@@ -105,7 +108,8 @@ func TestCli(t *testing.T) {
 
 		svrUrl := testSvr.URL
 
-		in := strings.NewReader("1")
+		test_Int := rand.Intn(6) + 1
+		in := strings.NewReader(strconv.Itoa(test_Int))
 
 		_, err := ReadAndOutput(in, output, svrUrl)
 

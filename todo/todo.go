@@ -84,14 +84,8 @@ func (tl *TodoList) list_from_json(json_list []byte) {
 
 func Save_Todo_List_From_Json(list baseList, file_name string) {
 	file, _ := os.Create(file_name)
-	json_obj, err := list.list_as_json()
-	if err != nil {
-		fmt.Print(err.Error())
-	}
-	err = SaveState(*file, json_obj)
-	if err != nil {
-		fmt.Print(err.Error())
-	}
+	json_obj, _ := list.list_as_json()
+	SaveState(*file, json_obj)
 }
 
 func Load_Todo_List_From_Json(list baseList, file_name string) {
