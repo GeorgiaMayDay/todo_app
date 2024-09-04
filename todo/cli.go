@@ -49,6 +49,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 
 	switch option {
 	case "1":
+		InfoLog("CLI", "Getting TODO list")
 		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/get_todo_list")
 		if shouldExit {
 			return keepgoing, server_err
@@ -62,6 +63,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		defer resp.Body.Close()
 		fmt.Fprint(out, output)
 	case "2":
+		InfoLog("CLI", "Adding Todo")
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			return true, err
@@ -73,6 +75,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
 	case "3":
+		InfoLog("CLI", "Delete Todo")
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			return true, err
@@ -84,6 +87,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
 	case "4":
+		InfoLog("CLI", "Completing Todo")
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			return true, err
@@ -95,6 +99,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		out_msg := "\"" + input + "\" complete"
 		fmt.Fprintln(out, out_msg)
 	case "5":
+		InfoLog("CLI", "Saving Todo List")
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/save")
 		if shouldExit {
 			return keepgoing, server_err
@@ -102,6 +107,7 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
+		InfoLog("CLI", "Loading Todo List")
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
 		if shouldExit {
 			return keepgoing, server_err
@@ -125,9 +131,11 @@ func ReadAndOutput(in io.Reader, out io.Writer, api_address string) (bool, error
 func get_Svr(url string) (*http.Response, error, bool, bool, error) {
 	resp, err := http.Get(url)
 	if resp == nil {
+		WarnLog("CLI", "Server didn't exist")
 		return nil, nil, true, true, &RequestError{0, fmt.Errorf("no response from server")}
 	}
 	if string(resp.Status[0]) != "2" {
+		WarnLog("CLI", "Bad Request")
 		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
 	}
 	if err != nil {
@@ -139,9 +147,11 @@ func get_Svr(url string) (*http.Response, error, bool, bool, error) {
 func post_Svr(url, ct string, reader io.Reader) (*http.Response, error, bool, bool, error) {
 	resp, err := http.Post(url, ct, reader)
 	if resp == nil {
+		WarnLog("CLI", "Server didn't exist")
 		return nil, nil, true, true, &RequestError{0, fmt.Errorf("no response from server")}
 	}
 	if string(resp.Status[0]) != "2" {
+		WarnLog("CLI", "Bad Request")
 		return nil, nil, true, true, &RequestError{resp.StatusCode, err}
 	}
 	if err != nil {

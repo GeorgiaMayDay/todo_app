@@ -22,13 +22,25 @@ func GoDo(finish chan<- bool) {
 
 const api_address string = "http://localhost:5000"
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func main() {
+	f, err := os.Create("log.json")
+	check(err)
+	todo.SetUpLogger(f)
+
 	fmt.Println("Welcome to GoDo, a application to help you manage you tasks")
 	fmt.Println("To end GoDo, either close the application or type Ctrl+C")
 	todo.Show_Instructions(os.Stdout)
+
 	finishChannel := make(chan bool, 1)
 
-	GoDo(finishChannel)
+	go GoDo(finishChannel)
+	todo.InfoLog("CLI", "CLI started")
 
 	quitChannel := make(chan os.Signal, 1)
 	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)
