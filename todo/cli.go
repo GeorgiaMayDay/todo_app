@@ -29,7 +29,7 @@ func Show_Instructions(printer io.Writer) {
 
 var invalid_opt_msg = "You've entered an invalid option"
 
-func ReadAndOutput(in io.Reader, out io.Writer, list baseList, api_address string) bool {
+func ReadAndOutput(in io.Reader, out io.Writer, api_address string) bool {
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 

@@ -56,7 +56,6 @@ func (sl *SpyList) list_from_json([]byte) {
 func TestCli(t *testing.T) {
 
 	t.Run("That CLI can print todos", func(t *testing.T) {
-		todoSpy := &SpyList{}
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text")
@@ -68,9 +67,26 @@ func TestCli(t *testing.T) {
 
 		in := strings.NewReader("1")
 
-		ReadAndOutput(in, output, todoSpy, svrUrl)
+		ReadAndOutput(in, output, svrUrl)
 
 		assertStrings(t, output.String(), generateTodoListAsString())
+	})
+
+	t.Run("That CLI can graceful handle server not responding", func(t *testing.T) {
+		output := &bytes.Buffer{}
+		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text")
+			fmt.Fprint(w, generateTodoListAsString())
+		}))
+		testSvr.Close()
+
+		svrUrl := testSvr.URL
+
+		in := strings.NewReader("1")
+
+		ReadAndOutput(in, output, svrUrl)
+
+		assertStrings(t, output.String(), "")
 	})
 }
 
