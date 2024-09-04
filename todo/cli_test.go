@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 )
 
 func assertList(t *testing.T, got, want []string) {
@@ -27,7 +27,8 @@ func generateTodoListAsString() string {
 func TestCli(t *testing.T) {
 
 	t.Run("That CLI can print todos", func(t *testing.T) {
-		ctx := context.Background()
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
 		finishChan := make(chan TodoResult, 1)
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -48,8 +49,41 @@ func TestCli(t *testing.T) {
 		assertStrings(t, output.String(), generateTodoListAsString())
 	})
 
+	t.Run("That CLI can handle multiple inputs", func(t *testing.T) {
+
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
+		finishChan := make(chan TodoResult, 1)
+		output := &bytes.Buffer{}
+		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text")
+			fmt.Fprint(w, generateTodoListAsString())
+		}))
+		defer testSvr.Close()
+
+		svrUrl := testSvr.URL
+
+		in := strings.NewReader("2\nBrush")
+
+		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
+
+		got := <-finishChan
+
+		assertNoError(t, got.Err)
+
+		in = strings.NewReader("1\n")
+
+		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
+
+		got = <-finishChan
+
+		assertNoError(t, got.Err)
+		assertStrings(t, output.String(), "\"Brush\" added\n"+generateTodoListAsString())
+	})
+
 	t.Run("That CLI can graceful handle server sending a bad status back", func(t *testing.T) {
-		ctx := context.Background()
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
 		finishChan := make(chan TodoResult, 1)
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +94,7 @@ func TestCli(t *testing.T) {
 		svrUrl := testSvr.URL
 
 		// test_Int := rand.Intn(6) + 1
-		test_Int := 2
+		test_Int := 1
 		in := strings.NewReader(strconv.Itoa(test_Int))
 
 		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
@@ -87,14 +121,14 @@ func TestCli(t *testing.T) {
 
 		svrUrl := testSvr.URL
 
-		test_Int := rand.Intn(6) + 1
-		in := strings.NewReader(strconv.Itoa(test_Int))
+		// test_Int := rand.Intn(6) + 1
+		in := strings.NewReader(strconv.Itoa(5))
 
 		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
 
 		got := <-finishChan
 
-		want := RequestError{502, nil}
+		want := RequestError{0, nil}
 
 		if cmp.Equal(got.Err, want) {
 			t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())

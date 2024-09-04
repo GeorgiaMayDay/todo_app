@@ -6,8 +6,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 	"todo_app/todo"
+
+	"github.com/google/uuid"
 )
 
 func GoDo(parentCtx context.Context, parentCancel context.CancelFunc) {
@@ -15,8 +16,8 @@ func GoDo(parentCtx context.Context, parentCancel context.CancelFunc) {
 	finishChan := make(chan todo.TodoResult, 1)
 	keepgoing := true
 	for keepgoing {
-		ctx, cancel := context.WithTimeout(parentCtx, 1*time.Second)
-		defer cancel()
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(parentCtx, string("Trace_id"), trace_id)
 		go todo.ReadAndOutput(ctx, os.Stdin, os.Stdout, api_address, finishChan)
 		select {
 		case result := <-finishChan:
@@ -25,7 +26,8 @@ func GoDo(parentCtx context.Context, parentCancel context.CancelFunc) {
 			}
 			keepgoing = result.Stop
 		case <-ctx.Done():
-			todo.InfoLog("CLI", "CLI stopped (using context)")
+			t_id := ctx.Value("Trace_id").(string)
+			todo.InfoLog("CLI", "CLI stopped:"+t_id)
 			continue
 		}
 	}

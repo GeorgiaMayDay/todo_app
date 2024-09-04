@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"time"
 )
 
 const jsonContentType string = "application/json"
@@ -57,8 +56,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 
 	switch option {
 	case "1":
-		InfoLog("CLI", "Getting TODO list")
-		time.Sleep(4 * time.Second)
+		InfoLog("CLI", "Getting TODO list: "+ctx.Value("Trace_id").(string))
 		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/get_todo_list")
 		if shouldExit {
 			ch <- TodoResult{keepgoing, server_err}
@@ -71,9 +69,8 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		}
 		resp.Body.Close()
 		fmt.Fprint(out, output)
-		result <- TodoResult{true, nil}
 	case "2":
-		InfoLog("CLI", "Adding Todo")
+		InfoLog("CLI", "Adding Todo: "+ctx.Value("Trace_id").(string))
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			result <- TodoResult{true, err}
@@ -85,7 +82,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
 	case "3":
-		InfoLog("CLI", "Delete Todo")
+		InfoLog("CLI", "Delete Todo: "+ctx.Value("Trace_id").(string))
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			result <- TodoResult{true, err}
@@ -97,7 +94,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
 	case "4":
-		InfoLog("CLI", "Completing Todo")
+		InfoLog("CLI", "Completing Todo: "+ctx.Value("Trace_id").(string))
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			result <- TodoResult{true, err}
@@ -109,7 +106,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "\"" + input + "\" complete"
 		fmt.Fprintln(out, out_msg)
 	case "5":
-		InfoLog("CLI", "Saving Todo List")
+		InfoLog("CLI", "Saving Todo List: "+ctx.Value("Trace_id").(string))
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/save")
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
@@ -117,7 +114,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
-		InfoLog("CLI", "Loading Todo List")
+		InfoLog("CLI", "Loading Todo List: "+ctx.Value("Trace_id").(string))
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
@@ -130,6 +127,9 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		result <- TodoResult{false, nil}
 	default:
 		fmt.Fprintln(out, invalid_opt_msg)
+		result <- TodoResult{true, nil}
+	}
+	if len(result) == 0 {
 		result <- TodoResult{true, nil}
 	}
 }
