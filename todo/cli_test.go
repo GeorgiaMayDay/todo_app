@@ -110,7 +110,8 @@ func TestCli(t *testing.T) {
 	})
 
 	t.Run("That CLI can graceful handle no server", func(t *testing.T) {
-		ctx := context.Background()
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
 		finishChan := make(chan TodoResult, 1)
 		output := &bytes.Buffer{}
 		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -13,6 +13,7 @@ import (
 func TestIntergrationParellelProcessing(t *testing.T) {
 
 	t.Run("That CLI can add Todos", func(t *testing.T) {
+		t.Parallel()
 		var trace_id string = uuid.NewString()
 		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
 		finishChan := make(chan TodoResult, 1)
@@ -47,6 +48,7 @@ func TestIntergrationParellelProcessing(t *testing.T) {
 	})
 
 	t.Run("That CLI can complete Todos", func(t *testing.T) {
+		t.Parallel()
 		var trace_id string = uuid.NewString()
 		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
 		finishChan := make(chan TodoResult, 1)

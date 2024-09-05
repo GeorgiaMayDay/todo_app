@@ -60,6 +60,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/get_todo_list")
 		if shouldExit {
 			ch <- TodoResult{keepgoing, server_err}
+			break
 		}
 		output := new(bytes.Buffer)
 		_, err := output.ReadFrom(resp.Body)
@@ -78,6 +79,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
+			break
 		}
 		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
@@ -90,6 +92,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
+			break
 		}
 		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
@@ -102,6 +105,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
+			break
 		}
 		out_msg := "\"" + input + "\" complete"
 		fmt.Fprintln(out, out_msg)
@@ -110,6 +114,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/save")
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
+			break
 		}
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
@@ -118,6 +123,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
+			break
 		}
 		out_msg := "Todo List Loaded"
 		fmt.Println(out, out_msg)
