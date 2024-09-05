@@ -82,6 +82,30 @@ func TestServer(t *testing.T) {
 
 		assertStrings(t, msg, `{"Message":"Status Not Found"}`)
 	})
+
+	t.Run("completing todo", func(t *testing.T) {
+		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
+		defer cleanUpFile()
+
+		server, err := NewJsonTodoServer(tempfile.Name())
+		if err != nil {
+			fmt.Print(err.Error())
+		}
+
+		todo_name, _ := json.Marshal("Cut")
+		request := httptest.NewRequest(http.MethodPost, "/complete_todo", bytes.NewBuffer(todo_name))
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		response_got := check_Todo(server, "Cut")
+
+		got_Todo := Todo{}
+
+		json.NewDecoder(response_got.Body).Decode(&got_Todo)
+
+		assertSingleTodo(t, got_Todo, Todo{"Cut", complete})
+	})
 }
 
 func check_Todo(server *TodoServer, todo_name string) *httptest.ResponseRecorder {

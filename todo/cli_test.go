@@ -93,7 +93,6 @@ func TestCli(t *testing.T) {
 
 		svrUrl := testSvr.URL
 
-		// test_Int := rand.Intn(6) + 1
 		test_Int := 1
 		in := strings.NewReader(strconv.Itoa(test_Int))
 
@@ -121,7 +120,6 @@ func TestCli(t *testing.T) {
 
 		svrUrl := testSvr.URL
 
-		// test_Int := rand.Intn(6) + 1
 		in := strings.NewReader(strconv.Itoa(5))
 
 		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
