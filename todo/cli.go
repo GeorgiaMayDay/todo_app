@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 )
 
 const jsonContentType string = "application/json"
@@ -26,9 +27,13 @@ func Show_Instructions(printer io.Writer) {
 	fmt.Fprintln(printer, "type 4 to complete or move back to todo a Todo, you can use the name or number")
 	fmt.Fprintln(printer, "type 5 and 6 to save or load respectively")
 	fmt.Fprintln(printer, "type 7 to see these instructions again")
+	fmt.Fprintln(printer, "type 8 to toggle threadsafe mode on and off")
 }
 
 const invalid_opt_msg string = "You've entered an invalid option"
+
+var mutex sync.Mutex
+var thread_safe_switch string = ""
 
 type TodoResult struct {
 	Stop bool
@@ -50,16 +55,15 @@ func (r *RequestError) Error() string {
 }
 
 func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address string, result chan<- TodoResult) {
-	ch := make(chan TodoResult, 1)
 	reader := bufio.NewScanner(in)
 	option := readLine(reader)
 
 	switch option {
 	case "1":
 		InfoLog("CLI", "Getting TODO list: "+ctx.Value("Trace_id").(string))
-		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/get_todo_list")
+		resp, _, shouldExit, keepgoing, server_err := get_Svr(api_address + thread_safe_switch + "/get_todo_list")
 		if shouldExit {
-			ch <- TodoResult{keepgoing, server_err}
+			result <- TodoResult{keepgoing, server_err}
 			break
 		}
 		output := new(bytes.Buffer)
@@ -129,6 +133,13 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		fmt.Println(out, out_msg)
 	case "7":
 		Show_Instructions(out)
+	case "8":
+		flipThreadSafe()
+		if thread_safe_switch == "" {
+			fmt.Fprintln(out, "Thread safety off")
+		} else {
+			fmt.Fprintln(out, "Thread safety on")
+		}
 	case "Quit", "q", "Q", "":
 		result <- TodoResult{false, nil}
 	default:
@@ -140,11 +151,22 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 	}
 }
 
+func flipThreadSafe() {
+	InfoLog("CLI", "Switch ThreadSafety")
+	mutex.Lock()
+	if thread_safe_switch == "" {
+		thread_safe_switch = "/threadsafe/"
+	} else {
+		thread_safe_switch = ""
+	}
+	mutex.Unlock()
+}
+
 func get_Svr(url string) (*http.Response, error, bool, bool, error) {
 	resp, err := http.Get(url)
 	if resp == nil {
 		WarnLog("CLI", "Server didn't exist")
-		return nil, nil, true, true, &RequestError{0, fmt.Errorf("no response from server")}
+		return nil, nil, true, true, &RequestError{500, fmt.Errorf("no response from server")}
 	}
 	if string(resp.Status[0]) != "2" {
 		WarnLog("CLI", "Bad Request")

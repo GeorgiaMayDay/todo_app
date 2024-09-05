@@ -10,7 +10,7 @@ import (
 const json_file_name string = "../../todo/db.json"
 
 func main() {
-	server, err := todo.NewJsonTodoServer(json_file_name)
+	server, err := todo.NewJsonTodoServer(json_file_name, "../../todo/db_threadsafe.json")
 	if err != nil {
 		fmt.Println(err.Error())
 	}

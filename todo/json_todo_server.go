@@ -1,9 +1,14 @@
 package todo
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -13,17 +18,47 @@ type TodoServer struct {
 	http.Handler
 }
 
+type apiRequest struct {
+	verb     string
+	key      string
+	response chan<- *bytes.Buffer
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 const textType = "text"
 
-func NewJsonTodoServer(file_name string) (*TodoServer, error) {
+var requestBuffer chan<- apiRequest
+var loggerDB *slog.Logger
+
+func NewJsonTodoServer(file_name string, ts_filename string) (*TodoServer, error) {
+	f, fileCreationErr := os.Create("log_jdb.json")
+	check(fileCreationErr)
+	loggerDB = slog.New(slog.NewJSONHandler(f, nil))
+
 	List, err := Load_New_Todo_List_From_Json(file_name)
 	if err != nil {
-		fmt.Println("There was an issue accessing the saved todo list and for this session you'll be working from a fresh jotpad!")
+		panic(err)
+		//fmt.Println("There was an issue accessing the saved todo list and for this session you'll be working from a fresh jotpad!")
 	}
 	p := new(TodoServer)
 
 	p.store = List
 	p.file = file_name
+
+	requests := make(chan apiRequest, 10)
+	requestBuffer = requests
+
+	if ts_filename != "" {
+		ctx := context.Background()
+
+		go actor(requests, ts_filename, ctx)
+		loggerDB.Info("JSON database", "Message", "Set Up")
+	}
 
 	router := http.NewServeMux()
 	router.Handle("/get_todo_list", http.HandlerFunc(p.getBoardHandler))
@@ -33,6 +68,8 @@ func NewJsonTodoServer(file_name string) (*TodoServer, error) {
 	router.Handle("/complete_todo", http.HandlerFunc(p.completeTodoHandler))
 	router.Handle("/save", http.HandlerFunc(p.saveTodoHandler))
 	router.Handle("/load", http.HandlerFunc(p.loadTodoHandler))
+
+	router.Handle("/threadsafe/", http.HandlerFunc(requestHandler))
 
 	p.Handler = router
 
@@ -79,9 +116,9 @@ func (p *TodoServer) loadTodoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *TodoServer) checkTodoHandler(w http.ResponseWriter, r *http.Request) {
-	player := strings.TrimPrefix(r.URL.Path, "/check_todo/")
+	todo := strings.TrimPrefix(r.URL.Path, "/check_todo/")
 
-	todo_found, err := checkTodo(p.store.List, player)
+	todo_found, err := checkTodo(p.store.List, todo)
 
 	if err != nil {
 		json.NewEncoder(w).Encode("{\"Message\":\"Status Not Found\"}")
@@ -89,4 +126,76 @@ func (p *TodoServer) checkTodoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", jsonContentType)
 	json.NewEncoder(w).Encode(todo_found)
+}
+
+func actor(requests chan apiRequest, filename string, ctx context.Context) <-chan struct{} {
+	done := make(chan struct{})
+	loggerDB.Info("Actor", "Message", "Set Up")
+	//Shutdown gracefully
+	go func() {
+		<-ctx.Done()
+		close(requests)
+	}()
+
+	go func() {
+		defer close(done)
+		processRequests(requests, filename)
+	}()
+
+	return done
+}
+
+func processRequests(requests <-chan apiRequest, filename string) <-chan struct{} {
+	done := make(chan struct{})
+	go func() {
+		List, err := Load_New_Todo_List_From_Json(filename)
+		if err != nil {
+			fmt.Println(err.Error())
+			panic(err)
+		}
+		defer close(done)
+		for req := range requests {
+			switch req.verb {
+			case "GetList":
+				output := &bytes.Buffer{}
+				List.outputTodos(output)
+				req.response <- output
+			}
+		}
+	}()
+	return done
+}
+
+func requestHandler(w http.ResponseWriter, r *http.Request) {
+	loggerDB.Info("JSON database", "Message", "Called in Threadsafe manner")
+	command := strings.TrimPrefix(r.URL.Path, "/threadsafe/")
+	request := apiRequest{}
+	responseChan := make(chan *bytes.Buffer)
+	switch command {
+	case "get_todo_list":
+		request = apiRequest{verb: "GetList", key: "", response: responseChan}
+	}
+
+	select {
+	case requestBuffer <- request:
+	default:
+		log.Println("request buffer full or shutdown")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	response, ok := <-responseChan
+
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if ok {
+		w.WriteHeader(http.StatusOK)
+		response.WriteTo(w)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 }

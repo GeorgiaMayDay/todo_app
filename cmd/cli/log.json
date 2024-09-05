@@ -1,6 +1,4 @@
-{"time":"2024-09-04T13:45:38.931396+01:00","level":"INFO","msg":"CLI","Message":"CLI started"}
-{"time":"2024-09-04T13:45:48.6371551+01:00","level":"INFO","msg":"CLI","Message":"Getting TODO list"}
-{"time":"2024-09-04T13:45:51.3575968+01:00","level":"INFO","msg":"CLI","Message":"Delete Todo"}
-{"time":"2024-09-04T13:45:53.6464159+01:00","level":"INFO","msg":"CLI","Message":"Getting TODO list"}
-{"time":"2024-09-04T13:45:55.107337+01:00","level":"INFO","msg":"CLI","Message":"Loading Todo List"}
-{"time":"2024-09-04T13:45:57.6172046+01:00","level":"INFO","msg":"CLI","Message":"Getting TODO list"}
+{"time":"2024-09-05T17:12:04.4967901+01:00","level":"INFO","msg":"CLI","Message":"CLI started"}
+{"time":"2024-09-05T17:12:06.0840955+01:00","level":"INFO","msg":"CLI","Message":"Getting TODO list: c617eda0-18d5-492f-9d1d-453758ec9572"}
+{"time":"2024-09-05T17:12:08.5485118+01:00","level":"INFO","msg":"CLI","Message":"Switch ThreadSafety"}
+{"time":"2024-09-05T17:12:09.5286278+01:00","level":"INFO","msg":"CLI","Message":"Getting TODO list: 08456f4d-d761-40ce-b7d6-7c39283e5b85"}

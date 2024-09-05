@@ -1,0 +1,3 @@
+{"time":"2024-09-05T17:12:00.7015229+01:00","level":"INFO","msg":"JSON database","Message":"Set Up"}
+{"time":"2024-09-05T17:12:00.7017626+01:00","level":"INFO","msg":"Actor","Message":"Set Up"}
+{"time":"2024-09-05T17:12:09.5297363+01:00","level":"INFO","msg":"JSON database","Message":"Called in Threadsafe manner"}

@@ -81,59 +81,65 @@ func TestCli(t *testing.T) {
 		assertStrings(t, output.String(), "\"Brush\" added\n"+generateTodoListAsString())
 	})
 
+	var TableCLICase []int = []int{1, 2, 3, 4, 5, 6}
+
 	t.Run("That CLI can graceful handle server sending a bad status back", func(t *testing.T) {
-		var trace_id string = uuid.NewString()
-		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
-		finishChan := make(chan TodoResult, 1)
-		output := &bytes.Buffer{}
-		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusBadGateway)
-		}))
-		defer testSvr.Close()
+		for _, cases := range TableCLICase {
+			var trace_id string = uuid.NewString()
+			ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
+			finishChan := make(chan TodoResult, 1)
+			output := &bytes.Buffer{}
+			testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusBadGateway)
+			}))
+			defer testSvr.Close()
 
-		svrUrl := testSvr.URL
+			svrUrl := testSvr.URL
 
-		test_Int := 1
-		in := strings.NewReader(strconv.Itoa(test_Int))
+			test_Int := cases
+			in := strings.NewReader(strconv.Itoa(test_Int))
 
-		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
+			ReadAndOutput(ctx, in, output, svrUrl, finishChan)
 
-		got := <-finishChan
+			got := <-finishChan
 
-		want := RequestError{502, nil}
+			want := RequestError{502, nil}
 
-		if cmp.Equal(got.Err, want) {
-			t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())
+			if cmp.Equal(got.Err, want) {
+				t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())
+			}
+
+			assertStrings(t, output.String(), "")
 		}
-
-		assertStrings(t, output.String(), "")
 	})
 
 	t.Run("That CLI can graceful handle no server", func(t *testing.T) {
-		var trace_id string = uuid.NewString()
-		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
-		finishChan := make(chan TodoResult, 1)
-		output := &bytes.Buffer{}
-		testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusBadGateway)
-		}))
-		testSvr.Close()
+		for _, cases := range TableCLICase {
+			var trace_id string = uuid.NewString()
+			ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
+			finishChan := make(chan TodoResult, 1)
+			output := &bytes.Buffer{}
+			testSvr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusBadGateway)
+			}))
+			testSvr.Close()
 
-		svrUrl := testSvr.URL
+			svrUrl := testSvr.URL
 
-		in := strings.NewReader(strconv.Itoa(5))
+			in := strings.NewReader(strconv.Itoa(cases))
 
-		ReadAndOutput(ctx, in, output, svrUrl, finishChan)
+			ReadAndOutput(ctx, in, output, svrUrl, finishChan)
 
-		got := <-finishChan
+			got := <-finishChan
 
-		want := RequestError{0, nil}
+			want := RequestError{500, fmt.Errorf("no response from server")}
 
-		if cmp.Equal(got.Err, want) {
-			t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())
+			if !cmp.Equal(got.Err.Error(), want.Error()) {
+				t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())
+			}
+
+			assertStrings(t, output.String(), "")
 		}
-
-		assertStrings(t, output.String(), "")
 	})
 }
 

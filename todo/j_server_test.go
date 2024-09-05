@@ -22,9 +22,26 @@ func TestServer(t *testing.T) {
 	t.Run("happy path test", func(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
-		server, err := NewJsonTodoServer(tempfile.Name())
+		server, err := NewJsonTodoServer(tempfile.Name(), "")
 
 		request := httptest.NewRequest(http.MethodGet, "/get_todo_list", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertNoError(t, err)
+
+		assertStrings(t, response.Body.String(), generateTodoListAsString())
+	})
+
+	t.Run("threadsafe happy path test", func(t *testing.T) {
+		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
+		tempfile_not_used, cleanUpNotUsedFile := createTempFile(t, InitialDataString)
+		defer cleanUpFile()
+		defer cleanUpNotUsedFile()
+		server, err := NewJsonTodoServer(tempfile_not_used.Name(), tempfile.Name())
+
+		request := httptest.NewRequest(http.MethodGet, "/threadsafe/get_todo_list", nil)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -38,7 +55,7 @@ func TestServer(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, "[]")
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name())
+		server, err := NewJsonTodoServer(tempfile.Name(), "")
 		if err != nil {
 			fmt.Print(err.Error())
 		}
@@ -63,7 +80,7 @@ func TestServer(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name())
+		server, err := NewJsonTodoServer(tempfile.Name(), "")
 		if err != nil {
 			fmt.Print(err.Error())
 		}
@@ -87,7 +104,7 @@ func TestServer(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name())
+		server, err := NewJsonTodoServer(tempfile.Name(), "")
 		if err != nil {
 			fmt.Print(err.Error())
 		}

@@ -23,6 +23,7 @@ func GoDo(parentCtx context.Context, parentCancel context.CancelFunc) {
 		case result := <-finishChan:
 			if result.Err != nil {
 				fmt.Println(result.Err.Error())
+				fmt.Println("There's been an issue with server communication")
 			}
 			keepgoing = result.Stop
 		case <-ctx.Done():
