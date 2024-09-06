@@ -181,6 +181,77 @@ func TestIntergrationParellelProcessing(t *testing.T) {
 		assertStrings(t, output.String(), generateTodoListAsString()+"7. Brush: Todo\n")
 	})
 
+	t.Run("That CLI can delete Todos in a threadsafe manner", func(t *testing.T) {
+		t.Parallel()
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
+		finishChan := make(chan TodoResult, 1)
+		output := &bytes.Buffer{}
+
+		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
+		defer cleanUpFile()
+
+		tempfile_useless, cleanUpFile_useless := createTempFile(t, "[]")
+		defer cleanUpFile_useless()
+
+		server, err := NewJsonTodoServer(tempfile_useless.Name(), tempfile.Name())
+
+		assertNoError(t, err)
+
+		ts := httptest.NewServer(server.Handler)
+		ts_url := ts.URL
+
+		toThreadSafeMode(ctx, ts_url, finishChan, t)
+
+		in := strings.NewReader("3\n3")
+		unTestedReadCmd(ctx, ts_url, finishChan, t, in)
+
+		in = strings.NewReader("1")
+
+		ReadAndOutput(ctx, in, output, ts_url, finishChan)
+
+		got := <-finishChan
+
+		assertNoError(t, got.Err)
+
+		assertStrings(t, output.String(), "1. Iron: Todo\n2. Eat: Complete\n3. Mine: Todo\n4. Shear: Todo\n5. Cut: Todo\n")
+	})
+
+	t.Run("That CLI can complete Todos in a threadsafe manner", func(t *testing.T) {
+		t.Parallel()
+		var trace_id string = uuid.NewString()
+		ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
+		finishChan := make(chan TodoResult, 1)
+		output := &bytes.Buffer{}
+
+		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
+		defer cleanUpFile()
+
+		tempfile_useless, cleanUpFile_useless := createTempFile(t, "[]")
+		defer cleanUpFile_useless()
+
+		server, err := NewJsonTodoServer(tempfile_useless.Name(), tempfile.Name())
+
+		assertNoError(t, err)
+
+		ts := httptest.NewServer(server.Handler)
+		ts_url := ts.URL
+
+		toThreadSafeMode(ctx, ts_url, finishChan, t)
+
+		in := strings.NewReader("4\n4")
+		unTestedReadCmd(ctx, ts_url, finishChan, t, in)
+
+		in = strings.NewReader("1")
+
+		ReadAndOutput(ctx, in, output, ts_url, finishChan)
+
+		got := <-finishChan
+
+		assertNoError(t, got.Err)
+
+		assertStrings(t, output.String(), "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Complete\n5. Shear: Todo\n6. Cut: Todo\n")
+	})
 }
 
 func toThreadSafeMode(ctx context.Context, url string, finishChan chan TodoResult, t *testing.T) {
