@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -83,10 +84,8 @@ func (p *TodoServer) getBoardHandler(w http.ResponseWriter, r *http.Request) {
 
 func (p *TodoServer) addTodoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", jsonContentType)
-	var output string
-	decoder := json.NewDecoder(r.Body)
-	decoder.Decode(&output)
-	p.store.addTodo(string(output[:]))
+	body, _ := io.ReadAll(r.Body)
+	p.store.addTodo(string(body[:]))
 }
 
 func (p *TodoServer) deleteTodoHandler(w http.ResponseWriter, r *http.Request) {
@@ -176,19 +175,17 @@ func processRequests(requests <-chan apiRequest, filename string) <-chan struct{
 }
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
-	loggerDB.Info("JSON database", "Message", "Called in Threadsafe manner")
 	command := strings.TrimPrefix(r.URL.Path, "/threadsafe/")
+	loggerDB.Info("JSON database", "Message", "Threadsafe call: "+command)
 	request := apiRequest{}
 	responseChan := make(chan *bytes.Buffer)
 	switch command {
 	case "get_todo_list":
 		request = apiRequest{verb: command, key: "", response: responseChan}
 	case "add_todo", "delete_todo", "complete_todo":
-		var output string
-		decoder := json.NewDecoder(r.Body)
-		decoder.Decode(&output)
-		key_val := string(output[:])
-		request = apiRequest{verb: command, key: key_val, response: responseChan}
+		body, _ := io.ReadAll(r.Body)
+		loggerDB.Info("JSON database", "Message", "Threadsafe Todo PUT with: "+string(body[:]))
+		request = apiRequest{verb: command, key: string(body[:]), response: responseChan}
 	}
 
 	select {

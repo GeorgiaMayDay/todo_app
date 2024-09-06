@@ -91,7 +91,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		if err != nil {
 			result <- TodoResult{true, err}
 		}
-		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+thread_safe_switch+"/add_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
 			break
@@ -104,7 +104,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		if err != nil {
 			result <- TodoResult{true, err}
 		}
-		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+thread_safe_switch+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
 			break
@@ -117,7 +117,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		if err != nil {
 			result <- TodoResult{true, err}
 		}
-		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
+		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+thread_safe_switch+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
 			break
@@ -134,7 +134,6 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
-		// Weirdly broken: check out
 		InfoLog("CLI", "Loading Todo List: "+ctx.Value("Trace_id").(string))
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
 		if shouldExit {
@@ -167,7 +166,7 @@ func flipThreadSafe() {
 	InfoLog("CLI", "Switch ThreadSafety")
 	mutex.Lock()
 	if thread_safe_switch == "" {
-		thread_safe_switch = "/threadsafe/"
+		thread_safe_switch = "/threadsafe"
 	} else {
 		thread_safe_switch = ""
 	}
@@ -213,5 +212,5 @@ func getNameFromScanner(reader *bufio.Scanner, out io.Writer) (string, []byte, e
 		fmt.Fprintln(out, "This is an invalid name")
 		return "", nil, fmt.Errorf("%s: This is an invalid name", string(todo_name))
 	}
-	return input, todo_name, nil
+	return input, todo_name[1 : len(input)+1], nil
 }

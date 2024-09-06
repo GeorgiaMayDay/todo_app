@@ -53,12 +53,13 @@ func TestServer(t *testing.T) {
 
 	t.Run("threadsafe add todo", func(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
-		tempfile_not_used, cleanUpNotUsedFile := createTempFile(t, InitialDataString)
+		tempfile_not_used, cleanUpNotUsedFile := createTempFile(t, "[]")
 		defer cleanUpFile()
 		defer cleanUpNotUsedFile()
 		server, err := NewJsonTodoServer(tempfile_not_used.Name(), tempfile.Name())
 
-		request := httptest.NewRequest(http.MethodGet, "/threadsafe/add_todo", nil)
+		var todo_name []byte = []byte("Example")
+		request := httptest.NewRequest(http.MethodPut, "/threadsafe/add_todo", bytes.NewBuffer(todo_name))
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -70,7 +71,7 @@ func TestServer(t *testing.T) {
 		server.ServeHTTP(response_get, request_get)
 
 		assertNoError(t, err)
-		assertStrings(t, response.Body.String(), generateTodoListAsString()+"7. Cheese\n")
+		assertStrings(t, response_get.Body.String(), generateTodoListAsString()+"7. Example: Todo\n")
 	})
 
 	t.Run("Posting test", func(t *testing.T) {
