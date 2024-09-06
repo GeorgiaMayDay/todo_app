@@ -51,6 +51,28 @@ func TestServer(t *testing.T) {
 		assertStrings(t, response.Body.String(), generateTodoListAsString())
 	})
 
+	t.Run("threadsafe add todo", func(t *testing.T) {
+		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
+		tempfile_not_used, cleanUpNotUsedFile := createTempFile(t, InitialDataString)
+		defer cleanUpFile()
+		defer cleanUpNotUsedFile()
+		server, err := NewJsonTodoServer(tempfile_not_used.Name(), tempfile.Name())
+
+		request := httptest.NewRequest(http.MethodGet, "/threadsafe/add_todo", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertNoError(t, err)
+		request_get := httptest.NewRequest(http.MethodGet, "/threadsafe/get_todo_list", nil)
+		response_get := httptest.NewRecorder()
+
+		server.ServeHTTP(response_get, request_get)
+
+		assertNoError(t, err)
+		assertStrings(t, response.Body.String(), generateTodoListAsString()+"7. Cheese\n")
+	})
+
 	t.Run("Posting test", func(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, "[]")
 		defer cleanUpFile()

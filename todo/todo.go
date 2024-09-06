@@ -24,15 +24,6 @@ func (t Todo) String() string {
 	return t.Name + ": " + string(t.Status)
 }
 
-type baseList interface {
-	outputTodos(writer io.Writer)
-	addTodo(newTodo string)
-	deleteTodo(delTodo string)
-	completeTodo(compTodo string)
-	list_as_json() ([]byte, error)
-	list_from_json([]byte)
-}
-
 type TodoList struct {
 	List []Todo
 }
@@ -82,13 +73,13 @@ func (tl *TodoList) list_from_json(json_list []byte) {
 	json.Unmarshal(json_list, &tl.List)
 }
 
-func Save_Todo_List_From_Json(list baseList, file_name string) {
+func Save_Todo_List_From_Json(list TodoList, file_name string) {
 	file, _ := os.Create(file_name)
 	json_obj, _ := list.list_as_json()
 	SaveState(*file, json_obj)
 }
 
-func Load_Todo_List_From_Json(list baseList, file_name string) {
+func Load_Todo_List_From_Json(list *TodoList, file_name string) {
 	file, _ := os.Open(file_name)
 	json_obj, _ := LoadState(*file)
 	list.list_from_json(json_obj)

@@ -19,6 +19,17 @@ func readLine(reader *bufio.Scanner) string {
 	return reader.Text()
 }
 
+type TodoErr string
+
+func (e TodoErr) Error() string {
+	return string(e)
+}
+
+const (
+	errNoResponse        = TodoErr("no response from server")
+	errWordAlreadyExists = TodoErr("cannot add word because it already exists")
+)
+
 func Show_Instructions(printer io.Writer) {
 	fmt.Fprintln(printer, "To use:")
 	fmt.Fprintln(printer, "type 1 to show the top 10 Todos")
@@ -123,6 +134,7 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "Current Todo List Saved"
 		fmt.Println(out, out_msg)
 	case "6":
+		// Weirdly broken: check out
 		InfoLog("CLI", "Loading Todo List: "+ctx.Value("Trace_id").(string))
 		_, _, shouldExit, keepgoing, server_err := get_Svr(api_address + "/load")
 		if shouldExit {
@@ -182,7 +194,7 @@ func post_Svr(url, ct string, reader io.Reader) (*http.Response, error, bool, bo
 	resp, err := http.Post(url, ct, reader)
 	if resp == nil {
 		WarnLog("CLI", "Server didn't exist")
-		return nil, nil, true, true, &RequestError{0, fmt.Errorf("no response from server")}
+		return nil, nil, true, true, &RequestError{500, errNoResponse}
 	}
 	if string(resp.Status[0]) != "2" {
 		WarnLog("CLI", "Bad Request")

@@ -132,7 +132,7 @@ func TestCli(t *testing.T) {
 
 			got := <-finishChan
 
-			want := RequestError{500, fmt.Errorf("no response from server")}
+			want := RequestError{500, errNoResponse}
 
 			if !cmp.Equal(got.Err.Error(), want.Error()) {
 				t.Errorf("got an error but got %s, when wants %s", got.Err.Error(), want.Error())

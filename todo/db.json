@@ -4,10 +4,6 @@
         "Status": "Todo"
     },
     {
-        "Name": "Test Cli",
-        "Status": "Complete"
-    },
-    {
         "Name": "Test save with Api",
         "Status": "Complete"
     }

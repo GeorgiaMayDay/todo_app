@@ -1,5 +1,7 @@
 package todo
 
+//TODO: Improve logger - look at Sprint.F and slog handler
+
 import (
 	"log/slog"
 	"os"

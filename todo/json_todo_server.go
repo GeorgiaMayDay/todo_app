@@ -107,7 +107,7 @@ func (p *TodoServer) completeTodoHandler(w http.ResponseWriter, r *http.Request)
 
 func (p *TodoServer) saveTodoHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	Save_Todo_List_From_Json(&p.store, p.file)
+	Save_Todo_List_From_Json(p.store, p.file)
 }
 
 func (p *TodoServer) loadTodoHandler(w http.ResponseWriter, r *http.Request) {
@@ -156,10 +156,19 @@ func processRequests(requests <-chan apiRequest, filename string) <-chan struct{
 		defer close(done)
 		for req := range requests {
 			switch req.verb {
-			case "GetList":
+			case "get_todo_list":
 				output := &bytes.Buffer{}
 				List.outputTodos(output)
 				req.response <- output
+			case "add_todo":
+				List.addTodo(req.key)
+				req.response <- &bytes.Buffer{}
+			case "delete_todo":
+				List.deleteTodo(req.key)
+				req.response <- &bytes.Buffer{}
+			case "complete_todo":
+				List.completeTodo(req.key)
+				req.response <- &bytes.Buffer{}
 			}
 		}
 	}()
@@ -173,7 +182,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	responseChan := make(chan *bytes.Buffer)
 	switch command {
 	case "get_todo_list":
-		request = apiRequest{verb: "GetList", key: "", response: responseChan}
+		request = apiRequest{verb: command, key: "", response: responseChan}
+	case "add_todo", "delete_todo", "complete_todo":
+		var output string
+		decoder := json.NewDecoder(r.Body)
+		decoder.Decode(&output)
+		key_val := string(output[:])
+		request = apiRequest{verb: command, key: key_val, response: responseChan}
 	}
 
 	select {
