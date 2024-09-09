@@ -83,6 +83,7 @@ func (p *TodoServer) getBoardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *TodoServer) addTodoHandler(w http.ResponseWriter, r *http.Request) {
+	loggerDB.Info("JSON database", "Message", "Add Todo called")
 	w.Header().Set("content-type", jsonContentType)
 	body, _ := io.ReadAll(r.Body)
 	p.store.addTodo(string(body[:]))
@@ -154,6 +155,7 @@ func processRequests(requests <-chan apiRequest, filename string) <-chan struct{
 		}
 		defer close(done)
 		for req := range requests {
+			loggerDB.Info("JSON database", "Message", "Threadsafe call: "+req.verb+" Processing")
 			switch req.verb {
 			case "get_todo_list":
 				output := &bytes.Buffer{}
@@ -161,14 +163,12 @@ func processRequests(requests <-chan apiRequest, filename string) <-chan struct{
 				req.response <- output
 			case "add_todo":
 				List.addTodo(req.key)
-				req.response <- &bytes.Buffer{}
 			case "delete_todo":
 				List.deleteTodo(req.key)
-				req.response <- &bytes.Buffer{}
 			case "complete_todo":
 				List.completeTodo(req.key)
-				req.response <- &bytes.Buffer{}
 			}
+			close(req.response)
 		}
 	}()
 	return done
@@ -197,6 +197,8 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, ok := <-responseChan
+
+	loggerDB.Info("JSON database", "Message", "Threadsafe call: "+command+" response received")
 
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusOK)

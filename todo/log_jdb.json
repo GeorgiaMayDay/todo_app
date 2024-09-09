@@ -1,0 +1,19 @@
+{"time":"2024-09-09T11:24:58.5168752+01:00","level":"INFO","msg":"JSON database","Message":"Set Up"}
+{"time":"2024-09-09T11:24:58.5171931+01:00","level":"INFO","msg":"Actor","Message":"Set Up"}
+{"time":"2024-09-09T11:24:58.5197205+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list"}
+{"time":"2024-09-09T11:24:58.5197205+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: delete_todo"}
+{"time":"2024-09-09T11:24:58.5197205+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: add_todo"}
+{"time":"2024-09-09T11:24:58.5197205+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe Todo PUT with: Brush"}
+{"time":"2024-09-09T11:24:58.5197205+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe Todo PUT with: 3"}
+{"time":"2024-09-09T11:24:58.5293684+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list Processing"}
+{"time":"2024-09-09T11:24:58.5293684+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: add_todo Processing"}
+{"time":"2024-09-09T11:24:58.5293684+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: delete_todo Processing"}
+{"time":"2024-09-09T11:24:58.5293684+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: delete_todo response received"}
+{"time":"2024-09-09T11:24:58.5293684+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list response received"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: add_todo response received"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list Processing"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list response received"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list Processing"}
+{"time":"2024-09-09T11:24:58.5320426+01:00","level":"INFO","msg":"JSON database","Message":"Threadsafe call: get_todo_list response received"}
