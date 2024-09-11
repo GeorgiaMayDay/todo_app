@@ -139,7 +139,7 @@ func actor(requests chan apiRequest, filename string, ctx context.Context) <-cha
 
 	go func() {
 		defer close(done)
-		processRequests(requests, filename)
+		<-processRequests(requests, filename)
 	}()
 
 	return done
