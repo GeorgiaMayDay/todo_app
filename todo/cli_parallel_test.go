@@ -23,7 +23,9 @@ func TestIntergration(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 
 		assertNoError(t, err)
 
@@ -54,7 +56,9 @@ func TestIntergration(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 
 		assertNoError(t, err)
 
@@ -88,7 +92,9 @@ func TestIntergration(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 
 		assertNoError(t, err)
 
@@ -118,11 +124,10 @@ func TestIntergrationParellelProcessing(t *testing.T) {
 	tempfile_useless, cleanUpFile_useless := createTempFile(t, "[]")
 	defer cleanUpFile_useless()
 
-	Server, err := NewJsonTodoServer(tempfile_useless.Name(), tempfile.Name())
+	ctx, _ := context.WithCancel(context.Background())
+	Server, err := NewJsonTodoServer(ctx, tempfile_useless.Name(), tempfile.Name())
 
 	assertNoError(t, err)
-	var trace_id string = uuid.NewString()
-	ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
 	finishChan := make(chan TodoResult, 1)
 	ts := httptest.NewServer(Server.Handler)
 	ts_url := ts.URL
@@ -178,46 +183,45 @@ func TestIntergrationParellelProcessing(t *testing.T) {
 		output := &bytes.Buffer{}
 
 		in := strings.NewReader("3\n3")
-		unTestedReadCmd(ctx, ts_url, finishChan_test, t, in)
+		unTestedReadCmd(ctx_test, ts_url, finishChan_test, t, in)
 
 		in = strings.NewReader("1")
 
-		unTestedReadCmd(ctx_test, ts_url, finishChan_test, t, in)
+		ReadAndOutput(ctx_test, in, output, ts_url, finishChan_test)
 
-		got := <-finishChan
+		got := <-finishChan_test
 
 		assertNoError(t, got.Err)
-
 		assertStrings(t, output.String(), "1. Iron: Todo\n2. Eat: Complete\n3. Mine: Todo\n4. Shear: Todo\n5. Cut: Todo\n")
 	})
 
-	// t.Run("That CLI can complete Todos in a threadsafe manner", func(t *testing.T) {
-	// 	t.Parallel()
-	// 	var trace_id string = uuid.NewString()
-	// 	ctx := context.WithValue(context.Background(), string("Trace_id"), trace_id)
-	// 	finishChan := make(chan TodoResult, 1)
-	// 	output := &bytes.Buffer{}
+	t.Run("That CLI can complete Todos in a threadsafe manner", func(t *testing.T) {
+		t.Parallel()
+		var trace_id string = uuid.NewString()
+		ctx_test := context.WithValue(context.Background(), string("Trace_id"), trace_id)
+		finishChan_test := make(chan TodoResult, 1)
+		output := &bytes.Buffer{}
 
-	// 	assertNoError(t, err)
+		assertNoError(t, err)
 
-	// 	ts := httptest.NewServer(Server.Handler)
-	// 	ts_url := ts.URL
+		ts := httptest.NewServer(Server.Handler)
+		ts_url := ts.URL
 
-	// 	toThreadSafeMode(ctx, ts_url, finishChan, t)
+		toThreadSafeMode(ctx_test, ts_url, finishChan_test, t)
 
-	// 	in := strings.NewReader("4\n4")
-	// 	unTestedReadCmd(ctx, ts_url, finishChan, t, in)
+		in := strings.NewReader("4\n4")
+		unTestedReadCmd(ctx_test, ts_url, finishChan_test, t, in)
 
-	// 	in = strings.NewReader("1")
+		in = strings.NewReader("1")
 
-	// 	ReadAndOutput(ctx, in, output, ts_url, finishChan)
+		ReadAndOutput(ctx_test, in, output, ts_url, finishChan_test)
 
-	// 	got := <-finishChan
+		got := <-finishChan_test
 
-	// 	assertNoError(t, got.Err)
+		assertNoError(t, got.Err)
 
-	// 	assertStrings(t, output.String(), "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Complete\n5. Shear: Todo\n6. Cut: Todo\n")
-	// })
+		assertStrings(t, output.String(), "1. Iron: Todo\n2. Eat: Complete\n3. Hunker: Complete\n4. Mine: Complete\n5. Shear: Todo\n6. Cut: Todo\n")
+	})
 }
 
 func toThreadSafeMode(ctx context.Context, url string, finishChan chan TodoResult, t *testing.T) {

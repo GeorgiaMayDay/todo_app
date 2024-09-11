@@ -2,6 +2,7 @@ package todo
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -22,7 +23,9 @@ func TestServer(t *testing.T) {
 	t.Run("happy path test", func(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 
 		request := httptest.NewRequest(http.MethodGet, "/get_todo_list", nil)
 		response := httptest.NewRecorder()
@@ -39,7 +42,10 @@ func TestServer(t *testing.T) {
 		tempfile_not_used, cleanUpNotUsedFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 		defer cleanUpNotUsedFile()
-		server, err := NewJsonTodoServer(tempfile_not_used.Name(), tempfile.Name())
+
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile_not_used.Name(), tempfile.Name())
+		defer ctxDone()
 
 		request := httptest.NewRequest(http.MethodGet, "/threadsafe/get_todo_list", nil)
 		response := httptest.NewRecorder()
@@ -56,7 +62,10 @@ func TestServer(t *testing.T) {
 		tempfile_not_used, cleanUpNotUsedFile := createTempFile(t, "[]")
 		defer cleanUpFile()
 		defer cleanUpNotUsedFile()
-		server, err := NewJsonTodoServer(tempfile_not_used.Name(), tempfile.Name())
+
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile_not_used.Name(), tempfile.Name())
+		defer ctxDone()
 
 		var todo_name []byte = []byte("Example")
 		request := httptest.NewRequest(http.MethodPut, "/threadsafe/add_todo", bytes.NewBuffer(todo_name))
@@ -78,7 +87,9 @@ func TestServer(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, "[]")
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 		if err != nil {
 			fmt.Print(err.Error())
 		}
@@ -103,7 +114,9 @@ func TestServer(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 		if err != nil {
 			fmt.Print(err.Error())
 		}
@@ -127,7 +140,9 @@ func TestServer(t *testing.T) {
 		tempfile, cleanUpFile := createTempFile(t, InitialDataString)
 		defer cleanUpFile()
 
-		server, err := NewJsonTodoServer(tempfile.Name(), "")
+		ctx, ctxDone := context.WithCancel(context.Background())
+		server, err := NewJsonTodoServer(ctx, tempfile.Name(), "")
+		defer ctxDone()
 		if err != nil {
 			fmt.Print(err.Error())
 		}

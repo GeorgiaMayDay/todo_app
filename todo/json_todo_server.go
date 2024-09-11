@@ -36,7 +36,7 @@ const textType = "text"
 var requestBuffer chan<- apiRequest
 var loggerDB *slog.Logger
 
-func NewJsonTodoServer(file_name string, ts_filename string) (*TodoServer, error) {
+func NewJsonTodoServer(ctx context.Context, file_name string, ts_filename string) (*TodoServer, error) {
 	f, fileCreationErr := os.Create("log_jdb.json")
 	check(fileCreationErr)
 	loggerDB = slog.New(slog.NewJSONHandler(f, nil))
@@ -55,10 +55,13 @@ func NewJsonTodoServer(file_name string, ts_filename string) (*TodoServer, error
 	requestBuffer = requests
 
 	if ts_filename != "" {
-		ctx := context.Background()
-
-		go actor(requests, ts_filename, ctx)
+		loopDone := actor(requests, ts_filename, ctx)
 		loggerDB.Info("JSON database", "Message", "Set Up")
+		go func() {
+			<-ctx.Done()
+			loggerDB.Info("Shutdown: From context")
+			<-loopDone
+		}()
 	}
 
 	router := http.NewServeMux()
@@ -129,20 +132,15 @@ func (p *TodoServer) checkTodoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func actor(requests chan apiRequest, filename string, ctx context.Context) <-chan struct{} {
-	done := make(chan struct{})
 	loggerDB.Info("Actor", "Message", "Set Up")
 	//Shutdown gracefully
 	go func() {
 		<-ctx.Done()
+		loggerDB.Info("Actor", "Message", "Shutdown due to context")
 		close(requests)
 	}()
 
-	go func() {
-		defer close(done)
-		<-processRequests(requests, filename)
-	}()
-
-	return done
+	return processRequests(requests, filename)
 }
 
 func processRequests(requests <-chan apiRequest, filename string) <-chan struct{} {
@@ -170,6 +168,7 @@ func processRequests(requests <-chan apiRequest, filename string) <-chan struct{
 			}
 			close(req.response)
 		}
+		Save_Todo_List_From_Json(List, filename)
 	}()
 	return done
 }
@@ -181,6 +180,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	responseChan := make(chan *bytes.Buffer)
 	switch command {
 	case "get_todo_list":
+		loggerDB.Info("JSON database", "Message", "Threadsafe Todo Get")
 		request = apiRequest{verb: command, key: "", response: responseChan}
 	case "add_todo", "delete_todo", "complete_todo":
 		body, _ := io.ReadAll(r.Body)

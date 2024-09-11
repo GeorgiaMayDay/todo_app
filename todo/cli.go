@@ -99,11 +99,11 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "\"" + input + "\" added"
 		fmt.Fprintln(out, out_msg)
 	case "3":
-		InfoLog("CLI", "Delete Todo: "+ctx.Value("Trace_id").(string))
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			result <- TodoResult{true, err}
 		}
+		InfoLog("CLI", "Delete Todo: "+input)
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+thread_safe_switch+"/delete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
@@ -112,11 +112,11 @@ func ReadAndOutput(ctx context.Context, in io.Reader, out io.Writer, api_address
 		out_msg := "\"" + input + "\" deleted"
 		fmt.Fprintln(out, out_msg)
 	case "4":
-		InfoLog("CLI", "Completing Todo: "+ctx.Value("Trace_id").(string))
 		input, todo_name, err := getNameFromScanner(reader, out)
 		if err != nil {
 			result <- TodoResult{true, err}
 		}
+		InfoLog("CLI", "Complete Todo: "+input)
 		_, _, shouldExit, keepgoing, server_err := post_Svr(api_address+thread_safe_switch+"/complete_todo", jsonContentType, bytes.NewBuffer(todo_name))
 		if shouldExit {
 			result <- TodoResult{keepgoing, server_err}
